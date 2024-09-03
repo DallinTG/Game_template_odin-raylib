@@ -11,6 +11,7 @@ asset :: struct {
 
 texture_names :: enum {
 none,
+	bace_light,
 	burning_loop_1,
 	space,
 	space_2,
@@ -18,6 +19,7 @@ none,
 	space_4,
 	space_5,
 	space_6,
+	square,
 	test,
 }
 
@@ -25,11 +27,8 @@ font_names :: enum {
 }
 
 shader_names :: enum {
-	color_mix,
-	cubes_panning,
 	test,
 	vs_test,
-	wave,
 }
 
 sound_names :: enum {
@@ -56,6 +55,7 @@ music_names :: enum {
 
 	all_raw_textures := [texture_names]asset {
 		.none = {},
+		.bace_light = { path = "textures/Bace_light.png", path_hash = 13365536812083001676, data = #load("textures/Bace_light.png"),info = #load("textures/Bace_light.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.burning_loop_1 = { path = "textures/burning_loop_1.png", path_hash = 6166790060608745278, data = #load("textures/burning_loop_1.png"),info = #load("textures/burning_loop_1.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.space = { path = "textures/space.png", path_hash = 15929091025269918601, data = #load("textures/space.png"),info = #load("textures/space.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.space_2 = { path = "textures/space_2.png", path_hash = 15114738339118189970, data = #load("textures/space_2.png"),info = #load("textures/space_2.txt",cstring) or_else #load("textures/default.txt", cstring), },
@@ -63,6 +63,7 @@ music_names :: enum {
 		.space_4 = { path = "textures/space_4.png", path_hash = 14066465962513658753, data = #load("textures/space_4.png"),info = #load("textures/space_4.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.space_5 = { path = "textures/space_5.png", path_hash = 9585186594634933907, data = #load("textures/space_5.png"),info = #load("textures/space_5.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.space_6 = { path = "textures/space_6.png", path_hash = 15458173398917068474, data = #load("textures/space_6.png"),info = #load("textures/space_6.txt",cstring) or_else #load("textures/default.txt", cstring), },
+		.square = { path = "textures/square.png", path_hash = 4981428206918530665, data = #load("textures/square.png"),info = #load("textures/square.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.test = { path = "textures/test.png", path_hash = 9959172591819369990, data = #load("textures/test.png"),info = #load("textures/test.txt",cstring) or_else #load("textures/default.txt", cstring), },
 	}
 
@@ -70,11 +71,8 @@ music_names :: enum {
 	}
 
 	all_shaders := [shader_names]asset {
-		.color_mix = { path = "shaders/color_mix.fs", path_hash = 17086463256258908819, info = #load("shaders/color_mix.fs",cstring), },
-		.cubes_panning = { path = "shaders/cubes_panning.fs", path_hash = 2565017951579374282, info = #load("shaders/cubes_panning.fs",cstring), },
 		.test = { path = "shaders/test.fs", path_hash = 16528326675515972663, info = #load("shaders/test.fs",cstring), },
 		.vs_test = { path = "shaders/vs_test.vs", path_hash = 17034886045086792897, data = #load("shaders/vs_test.vs"), },
-		.wave = { path = "shaders/wave.fs", path_hash = 888301694223740530, info = #load("shaders/wave.fs",cstring), },
 	}
 
 	all_sounds := [sound_names]asset {

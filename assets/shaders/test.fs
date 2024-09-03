@@ -5,9 +5,8 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 
 // Input uniform values
-//uniform sampler2D lights;
-uniform sampler2D mask;
-uniform vec4 world_light;
+uniform sampler2D lights;
+uniform sampler2D darknes;
 //uniform int frame;
 
 // Output fragment color
@@ -15,11 +14,11 @@ out vec4 finalColor;
 
 void main()
 {
-    vec4 t_lights = texture(mask,fragTexCoord);
-   // finalColor = vec4(t_lights.rgb, 1-t_lights.a);
-   
-    //finalColor=vec4(world_light);
-    finalColor=vec4(t_lights.rgb + world_light.rgb, 1-t_lights.a-world_light.a);
+    vec4 t_lights = texture(lights,fragTexCoord);
+    vec4 t_darknes = texture(darknes,fragTexCoord);
 
-    //finalColor=mix(texelColor0,texelColor1,final);
+
+    finalColor = vec4((t_darknes.rgb+t_lights.rgb), t_darknes.a-t_lights.a);
+
+
 }

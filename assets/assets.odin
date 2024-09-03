@@ -12,6 +12,7 @@ import rl "vendor:raylib"
 
 
 atlas_size:i32: 4096
+buffer:i32:100
 
 
 rendertextur_info::struct{
@@ -42,6 +43,15 @@ atlases := make([dynamic]rendertextur_info)
 textures :[texture_names]textur_info
 
 shader_test : rl.Shader
+
+sounds:[sound_names]rl.Sound
+init_sounds::proc(){
+    for sound,i in all_sounds{
+        if i != sound_names.none{
+            sounds[i] = rl.LoadSoundFromWave(rl.LoadWaveFromMemory(".wav",&all_sounds[i].data[0],cast(i32)(len(all_sounds[i].data))))
+        }
+    }
+}
 
 init_texturs::proc(){
     all_images : [len(texture_names)]image_info
@@ -77,6 +87,7 @@ init_texturs::proc(){
         
         if images.image.width + atlas_x > atlas_size{
             atlas_y+=bigist_y
+            atlas_y += buffer
             bigist_y = images.image.height
             atlas_x = 0
         }
@@ -96,7 +107,7 @@ init_texturs::proc(){
         {
             textures[images.name].atlas_index = cur_atlas
             textures[images.name].name = images.name
-            //textures[images.name].frames = 0
+            textures[images.name].frames = 0
             info := strings.split(cast(string)images.info,",")
             if info[0] != ""{
                 textures[images.name].frame_whidth = strconv.atoi(info[0])
@@ -105,26 +116,52 @@ init_texturs::proc(){
                 textures[images.name].frame_rate = strconv.atof(info[3])
                 x_ofset:=0
                 y_ofset:=0
+                fmt.print("     ")
+                fmt.print(cast(f32)atlas_x + cast(f32)x_ofset)
+                fmt.print("     ")
                 for i in 0..<textures[images.name].frames {
                 if cast(i32)x_ofset>=images.image.width{
-                    y_ofset+=textures[images.name].frame_hieght
+                    y_ofset += textures[images.name].frame_hieght
                     x_ofset=0
                 }
-                
+                // fmt.print("  ")
+                // fmt.print(i)
+                // fmt.print("  ")
+                // fmt.print(textures[images.name].name)
+                // fmt.print("  ")
+                // fmt.print(cast(f32)atlas_x)
+                // fmt.print("  ")
+                // fmt.print(cast(f32)atlas_y)
+                // fmt.print("  ")
                 append(&textures[images.name].rectangle,rl.Rectangle{
                     cast(f32)atlas_x + cast(f32)x_ofset,
-                    cast(f32)atlas_y + cast(f32)y_ofset-cast(f32)images.image.height,
+                    cast(f32)(atlas_y * -1) - cast(f32)y_ofset - cast(f32)images.image.height,
                     cast(f32)textures[images.name].frame_whidth,
                     cast(f32)textures[images.name].frame_hieght,
                     })
-                x_ofset+=textures[images.name].frame_whidth
+                x_ofset += textures[images.name].frame_whidth
                 }
             }else{
-                append(&textures[images.name].rectangle, rl.Rectangle{cast(f32)atlas_x,cast(f32)atlas_y-cast(f32)images.image.height,cast(f32)images.image.width,cast(f32)images.image.height})
+                // fmt.print("     ")
+                // fmt.print("waffles4")
+                // fmt.print("     ")
+                // fmt.print(textures[images.name].name)
+                // fmt.print("  ")
+                // fmt.print(cast(f32)atlas_x)
+                // fmt.print("  ")
+                // fmt.print(cast(f32)atlas_y)
+                // fmt.print("  ")
+                append(&textures[images.name].rectangle, rl.Rectangle{
+                    cast(f32)atlas_x,
+                    cast(f32)(atlas_y * -1)-cast(f32)images.image.height,
+                    cast(f32)images.image.width,
+                    cast(f32)images.image.height})
+                // atlas_x += buffer
             }
             
         }
         atlas_x += images.image.width
+        atlas_x += buffer
         rl.UnloadTexture(texture)
     }
 }
@@ -137,9 +174,4 @@ int_shaders::proc(){
 sort_image_by_height::proc(image_1: image_info,image_2: image_info)->(bool){
 
     return image_1.image.height > image_2.image.height
-}
-
-draw_texture::proc(name : texture_names ,rec:rl.Rectangle,origin:rl.Vector2={0,0},rotation:f32=0,color:rl.Color=rl.WHITE,frame_index:int = 0) {
-     rl.DrawTexturePro(atlases[textures[name].atlas_index].render_texture.texture, textures[name].rectangle[frame_index], rec, origin, rotation, color)
-  
 }
