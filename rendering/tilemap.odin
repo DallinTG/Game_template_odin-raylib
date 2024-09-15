@@ -1,4 +1,4 @@
-package rendering
+package game_eengin
 import rl "vendor:raylib"
 import as "../assets"
 import "core:fmt"

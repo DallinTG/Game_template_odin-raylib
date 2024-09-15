@@ -1,4 +1,4 @@
-package rendering
+package game_eengin
 
 import "core:fmt"
 import as "../assets"

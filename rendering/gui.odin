@@ -1,4 +1,4 @@
-package rendering
+package game_engin
 
 import rl "vendor:raylib"
 
