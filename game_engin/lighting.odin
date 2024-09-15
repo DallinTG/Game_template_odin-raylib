@@ -1,4 +1,4 @@
-package game_eengin
+package game_engin
 
 import "core:strings"
 import "core:strconv"
