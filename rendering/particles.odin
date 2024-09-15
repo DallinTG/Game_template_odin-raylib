@@ -32,7 +32,7 @@ Particle :: struct{
     
 }
 
-max_particles:: 20000
+max_particles:: 2000
 all_particles:#soa[max_particles]Particle
 particle_count: int = 0
 shader: rl.Shader
@@ -90,14 +90,17 @@ spawn_particle::proc(particle: Particle){
 }
 
 draw_particle::proc(particle: Particle){
-    vec2:=rl.GetWorldToScreen2D(particle.xy ,camera)
+    // vec2:=rl.GetWorldToScreen2D(particle.xy ,camera)
+    vec2:=particle.xy
     x:=vec2.x
     y:=vec2.y
 
     size :=  math.lerp(particle.size_e,particle.size_s,cast(f32)particle.life/particle.max_life)
     angle := math.lerp(particle.angle_e,particle.angle_s,cast(f32)particle.life/particle.max_life)
     color := rl.ColorFromNormalized(math.lerp(particle.color_e,particle.color_s,cast(f32)particle.life/particle.max_life))
-    draw_texture(particle.texture.name,rl.Rectangle{x,y,size.x * camera.zoom,size.y * camera.zoom},size/2 * camera.zoom, angle, color,particle.texture.curent_frame)
+//camra is biult in to this one
+    //draw_texture(particle.texture.name,rl.Rectangle{x,y,size.x * camera.zoom,size.y * camera.zoom},size/2 * camera.zoom, angle, color,particle.texture.curent_frame)
+    draw_texture(particle.texture.name,rl.Rectangle{x,y,size.x,size.y},size/2, angle, color,particle.texture.curent_frame)
 }
 
 

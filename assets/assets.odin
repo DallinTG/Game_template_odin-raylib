@@ -166,7 +166,7 @@ init_texturs::proc(){
     }
 }
 
-int_shaders::proc(){
+init_shaders::proc(){
     shader_test = rl.LoadShaderFromMemory(all_shaders[.vs_test].info,all_shaders[.test].info)
 }
 

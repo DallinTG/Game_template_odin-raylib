@@ -12,10 +12,15 @@ bace_light:rl.Color= {0,0,0,0}
 bace_dark:rl.Color= {0,0,20,200}
 
 do_lighting::proc(){
+    screen_width:=rl.GetScreenWidth() 
+    screen_height:=rl.GetScreenHeight()
+
     rl.SetShaderValueTexture(as.shader_test,rl.GetShaderLocation(as.shader_test, "lights"), light_mask.texture)
     rl.SetShaderValueTexture(as.shader_test,rl.GetShaderLocation(as.shader_test, "darknes"), dark_mask.texture)
     rl.BeginShaderMode(as.shader_test)
-    rl.DrawTextureRec(dark_mask.texture, {0,0,cast(f32)dark_mask.texture.width,cast(f32)dark_mask.texture.height*-1},{0,0},rl.WHITE)
+    //rl.DrawTextureRec(dark_mask.texture, {0,0,cast(f32)dark_mask.texture.width,cast(f32)dark_mask.texture.height*-1},{0,0},rl.WHITE)
+    cord := this_frame_camera_target
+    rl.DrawTexturePro(dark_mask.texture,{0,0,cast(f32)dark_mask.texture.width,cast(f32)dark_mask.texture.height * -1},{cord.x, cord.y, cast(f32)dark_mask.texture.width / camera.zoom,cast(f32)dark_mask.texture.height / camera.zoom},{0,0},0,rl.WHITE)
     rl.EndShaderMode()
 }
 

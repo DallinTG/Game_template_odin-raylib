@@ -9,6 +9,7 @@ import "core:hash"
 dir_path_to_file_infos :: proc(path: string) -> []os.File_Info {
 	d, derr := os.open(path, os.O_RDONLY)
 	if derr != 0 {
+		fmt.print("\n |path| ",path,"\n")
 		panic("open failed")
 	}
 	defer os.close(d)
@@ -55,6 +56,8 @@ main :: proc() {
 	shader_paths := make([dynamic]string, context.temp_allocator)
 	sound_paths := make([dynamic]string, context.temp_allocator)
 	music_paths := make([dynamic]string, context.temp_allocator)
+	tile_map_paths := make([dynamic]string, context.temp_allocator)
+	world_map_paths := make([dynamic]string, context.temp_allocator)
 
 	fmt.print(" 5 ")
 	
@@ -135,6 +138,15 @@ main :: proc() {
 			}
 		}
 	}
+	// t_maps
+	{
+		file_infos := dir_path_to_file_infos("../tile_maps")
+		for fi in file_infos {
+		 	if strings.has_suffix(fi.name, ".tmap") {
+				append(&tile_map_paths, fmt.tprintf("tile_maps/%s", fi.name))
+			}
+		}
+	}
 
 	fmt.print(" 3 ")
 
@@ -176,6 +188,22 @@ main :: proc() {
 	fmt.fprintln(f, "music_names :: enum {")
 	fmt.fprint(f, "\tnone,\n")
 	for p in music_paths {
+		fmt.fprintf(f, "\t%s,\n", asset_name(p))
+	}
+	fmt.fprintln(f, "}")
+	fmt.fprintln(f, "")
+
+	fmt.fprintln(f, "tile_map_names :: enum {")
+	fmt.fprint(f, "\tnone,\n")
+	for p in tile_map_paths {
+		fmt.fprintf(f, "\t%s,\n", asset_name(p))
+	}
+	fmt.fprintln(f, "}")
+	fmt.fprintln(f, "")
+
+	fmt.fprintln(f, "world_map_names :: enum {")
+	fmt.fprint(f, "\tnone,\n")
+	for p in world_map_paths {
 		fmt.fprintf(f, "\t%s,\n", asset_name(p))
 	}
 	fmt.fprintln(f, "}")
@@ -233,6 +261,10 @@ main :: proc() {
 	emit_asset_list(f, "all_sounds", "sound_names", sound_paths, true, true)
 	fmt.fprintln(f, "")
 	emit_asset_list(f, "all_music", "music_names", music_paths, true, true)
+	fmt.fprintln(f, "")
+	emit_asset_list(f, "all_tile_maps", "tile_map_names", tile_map_paths, true, true)
+	fmt.fprintln(f, "")
+	emit_asset_list(f, "all_world_map", "world_map_names", world_map_paths, true, true)
 	fmt.fprintln(f, "")
 	// fmt.fprintln(f, "} else {")
 	// emit_asset_list(f, "all_textures", "TextureName", texture_paths, false, true)

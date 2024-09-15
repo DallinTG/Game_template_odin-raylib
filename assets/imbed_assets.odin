@@ -33,6 +33,7 @@ shader_names :: enum {
 
 sound_names :: enum {
 	none,
+	eat,
 	running_1,
 	running_2,
 	running_3,
@@ -50,6 +51,15 @@ sound_names :: enum {
 }
 
 music_names :: enum {
+	none,
+}
+
+tile_map_names :: enum {
+	none,
+	pos_0_0,
+}
+
+world_map_names :: enum {
 	none,
 }
 
@@ -77,6 +87,7 @@ music_names :: enum {
 
 	all_sounds := [sound_names]asset {
 		.none = {},
+		.eat = { path = "sounds/eat.wav", path_hash = 9322739684646411757, data = #load("sounds/eat.wav"), },
 		.running_1 = { path = "sounds/running_1.wav", path_hash = 8802162981989364211, data = #load("sounds/running_1.wav"), },
 		.running_2 = { path = "sounds/running_2.wav", path_hash = 15640088568689936950, data = #load("sounds/running_2.wav"), },
 		.running_3 = { path = "sounds/running_3.wav", path_hash = 2696931676953568120, data = #load("sounds/running_3.wav"), },
@@ -94,6 +105,15 @@ music_names :: enum {
 	}
 
 	all_music := [music_names]asset {
+		.none = {},
+	}
+
+	all_tile_maps := [tile_map_names]asset {
+		.none = {},
+		.pos_0_0 = { path = "tile_maps/pos_0_0.tmap", path_hash = 9625980316099917482, data = #load("tile_maps/pos_0_0.tmap"), },
+	}
+
+	all_world_map := [world_map_names]asset {
 		.none = {},
 	}
 
