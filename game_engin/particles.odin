@@ -6,9 +6,6 @@ import "core:fmt"
 import "core:math"
 import "core:math/rand"
 
-
-
-
 Particle :: struct{
     xy: rl.Vector2,
     life: f32,
@@ -33,10 +30,9 @@ Particle :: struct{
 }
 
 max_particles:: 2000
-all_particles:#soa[max_particles]Particle
+all_particles:=new(#soa[max_particles]Particle)
 particle_count: int = 0
 shader: rl.Shader
-
 
 calculate_particles::proc(){
     delta :f32= rl.GetFrameTime()
@@ -78,7 +74,7 @@ calculate_particles_light::proc(){
                 size :=  math.lerp(particle.light_size_e,particle.light_size_s,cast(f32)particle.life/particle.max_life)
                 draw_colored_light(all_particles[i].xy,size,color)
         }
-   }
+    }
 }
 
 

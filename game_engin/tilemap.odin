@@ -19,6 +19,9 @@ render_edit_bg:=true
 render_edit_mg:=true
 render_edit_fg:=true
 
+curent_brush_textur:as.texture_names=as.texture_names.none
+
+
 
 tile :: struct{
     bg_id: as.texture_names,
@@ -92,7 +95,7 @@ return new_t_map
 lode_t_map_from_bi ::proc(data:[]u8)->(tile_map){
     data_to_save:tile_map_save_data
     cbor.unmarshal_from_string(cast(string)data,&data_to_save)
-    fmt.print(data_to_save)
+    //fmt.print(data_to_save)
     new_t_map :tile_map
     new_t_map.pos = data_to_save.pos
     new_t_map.tiles = data_to_save.tiles
@@ -196,9 +199,9 @@ set_t_in_t_map :: proc(t_map: ^tile_map, t_pos:[2]f32, texture: as.texture_names
             draw_texture(t_map.tiles[cast(int)d_t_pos.x][cast(int)d_t_pos.y].fg_id ,{cast(f32)( cast(int)d_t_pos.x * t_map_t_size),cast(f32)( cast(int)d_t_pos.y * t_map_t_size), t_map_t_size, t_map_t_size})
             rl.EndTextureMode()
             }
-        if texture == as.texture_names.none{
+        //if texture == as.texture_names.none{
             rl.EndBlendMode() 
-        }
+        //}
     }
 }
 
@@ -217,6 +220,10 @@ check_editer_mode :: proc(){
                 }
                 if rl.IsKeyPressed(.THREE){
                     render_edit_fg = !render_edit_fg
+                }
+                if rl.IsKeyPressed(.TAB){
+                    editor_show = !editor_show
+                    
                 }
                 if rl.IsKeyPressed(.S){
                     //save_t_map(Curent_world_map.t_maps[{0,0}])
@@ -239,7 +246,7 @@ draw_on_world_map :: proc(world_map: ^World_map){
 
     if rl.IsMouseButtonDown(.LEFT) {
         if world_map.t_maps[{cast(i32)t_map_pos_x,cast(i32)t_map_pos_y}].is_initialised{
-            set_t_in_t_map(&world_map.t_maps[{cast(i32)t_map_pos_x,cast(i32)t_map_pos_y}],tp,as.texture_names.none,render_edit_bg,render_edit_mg,render_edit_fg)
+            set_t_in_t_map(&world_map.t_maps[{cast(i32)t_map_pos_x,cast(i32)t_map_pos_y}],tp,curent_brush_textur,render_edit_bg,render_edit_mg,render_edit_fg)
         }
     }
 
