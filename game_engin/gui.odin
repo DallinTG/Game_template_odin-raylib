@@ -6,18 +6,27 @@ import as "../assets"
 import "core:math"
 
 gui_grab_h :f32 : 25
+pading:f32:4
 
 init_gui :: proc (){
     
 }
+checking_guis::proc(){
+    check_editer_mode()
+    if rl.IsKeyPressed(.ESCAPE){
+        menu_show = !menu_show 
+        menu_panel.pos.x = cast(f32)rl.GetScreenWidth()/2  - menu_panel.w_h.x/2
+        menu_panel.pos.y = cast(f32)rl.GetScreenHeight()/2 - menu_panel.w_h.y/2
+    }
+}
 
 editor_show : bool 
-editor_panel :gui_panel= {{10,10},{317,400},25,"Editor",false}
+editor_panel :gui_panel = {{10,10},{317,400},25,"Editor",false}
 editor_curent_page : i32
-editer_spinner:gui_spinner={{editer_icon_pading,26},{-editer_icon_pading-editer_icon_pading,30},1,1,""}
+editer_spinner:gui_spinner = {{editer_icon_pading,26},{-editer_icon_pading-editer_icon_pading,30},1,1,""}
 editer_spinner_mode : bool
-editer_exit_button:gui_button ={{editor_panel.w_h.x-22,2},{20,20},"X"}
-editer_icon_button:gui_button ={{editer_icon_pading,editer_spinner.pos_offset.y+editer_spinner.w_h_offset.y+editer_icon_pading},{20,20},"X"}
+editer_exit_button:gui_button = {{editor_panel.w_h.x-22,2},{20,20},"X"}
+editer_icon_button:gui_button = {{editer_icon_pading,editer_spinner.pos_offset.y+editer_spinner.w_h_offset.y+editer_icon_pading},{20,20},"X"}
 editer_icon_size:f32:33 
 editer_icon_pading:f32:2
 
@@ -26,14 +35,26 @@ do_ui_t_editor :: proc(){
     if editer_mode {
         if editor_show{
             render_gui_panel(&editor_panel)  // maine panel everything is relitive to this
-        
             render_gui_spinner(&editor_panel,&editer_spinner,&editor_curent_page,&editer_spinner_mode)  // Gui page tab
             render_gui_textur_icons(editer_icon_button.pos_offset.x,editer_icon_button.pos_offset.y,0,0)                                          
             if render_gui_button(&editor_panel,&editer_exit_button) {editor_show = false}               // X button
-            
         }
     }
 }
+
+menu_show : bool
+menu_panel :gui_panel = {{10,cast(f32)rl.GetScreenHeight()/2},{317,400},25,"Menu",false}
+menu_exit_button:gui_button = {{menu_panel.w_h.x-22,2},{20,20},"X"}
+menu_exit_to_desktop_button:gui_button = {{pading,pading+25},{menu_panel.w_h.x-pading-pading,30},"Exit To Desktop"}
+do_ui_menu :: proc(){
+    if menu_show{
+        render_gui_panel(&menu_panel)  // maine panel everything is relitive to this                                        
+        if render_gui_button(&menu_panel,&menu_exit_button) {menu_show = false}               // X button
+        if render_gui_button(&menu_panel,&menu_exit_to_desktop_button) {window_should_close = true}
+    }
+}
+
+
 render_gui_textur_icons::proc(shrink_l_x:f32,shrink_u_y:f32,shrink_r_x:f32,shrink_b_y:f32){
     width := editor_panel.w_h.x - editer_icon_pading-shrink_r_x-shrink_l_x+editer_icon_pading
     hight := editor_panel.w_h.y - shrink_b_y-shrink_u_y
@@ -95,7 +116,7 @@ render_gui_panel :: proc(gui_panel:^gui_panel){
             }
         }
     }
-    rl.GuiPanel({gui_panel.pos[0] ,gui_panel.pos[1] ,gui_panel.w_h[0] ,gui_panel.w_h[1]},gui_panel.name)
+    rl.GuiPanel({gui_panel.pos.x ,gui_panel.pos.y ,gui_panel.w_h.x ,gui_panel.w_h.y},gui_panel.name)
 }
 
 gui_spinner::struct {

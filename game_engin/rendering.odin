@@ -120,7 +120,8 @@ do_fg :: proc(){
 }
 
 do_ui :: proc(){
-    rl.DrawFPS(10, 10)
+    if settings_game.video.show_fps{rl.DrawFPS(10, 10)}
     do_ui_t_editor()
+    do_ui_menu()
 }
 

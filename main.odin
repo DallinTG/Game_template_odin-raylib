@@ -9,18 +9,22 @@ import "core:slice"
 import "core:encoding/cbor"
 
 
+
 init_startup::proc(){
     rl.SetConfigFlags({.WINDOW_RESIZABLE})
     rl.SetTargetFPS(ge.framerate)
     ge.init_memery()
     rl.InitWindow(800, 800, "test")
     rl.InitAudioDevice()
+    rl.SetExitKey(.KEY_NULL)
+    ge.init_settings()
     ge.init_camera()
     ge.init_gui()
     as.init_texturs()
     as.init_sounds()
     as.init_shaders()
     ge.init_maskes()
+    ge.camera.target = {0,0}
 }
 main :: proc() {
     init_startup()
@@ -29,10 +33,16 @@ main :: proc() {
     ge.init_t_map(&temptmap)
     ge.add_t_map_to_world_map(&temptmap, &ge.Curent_world_map)
 
-    for (!rl.WindowShouldClose()) 
+    for (!ge.window_should_close) 
     {
-        ge.check_editer_mode()
-        ge.do_lightting()
+        ge.window_should_close = rl.WindowShouldClose()
+        if !ge.game_paused{
+            ge.do_entitys()
+            ge.checking_guis()
+            ge.do_lightting()
+        }
+        ge.get_time_util()
+        ge.manage_sound_bytes()
         rl.BeginDrawing()
         rl.ClearBackground(rl.RAYWHITE)
         ge.do_under_ui()
@@ -55,7 +65,9 @@ main :: proc() {
 
         ge.do_bg()
         ge.do_mg()
-        ge.calculate_particles()
+        if !ge.game_paused{
+            ge.calculate_particles()
+        }
         ge.draw_lighting_mask()
         ge.do_fg()
         rl.EndMode2D()
