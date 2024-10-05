@@ -4,6 +4,7 @@ import "core:fmt"
 import as "../assets"
 import rl "vendor:raylib"
 import "core:slice"
+// import b2 "vendor:box2d"
 
 camera:rl.Camera2D = { 0 ,0 ,0 ,1 }
 sprite::struct {
@@ -21,6 +22,7 @@ temp_sprite_buffer:=make([dynamic]sprite)
 this_frame_camera_target:=camera.target
 light_mask:rl.RenderTexture 
 dark_mask:rl.RenderTexture 
+bloom_mask:rl.RenderTexture 
 //Particle_mask:rl.RenderTexture2D
 
 screane_Width_old :i32
@@ -29,7 +31,7 @@ screane_height_old :i32
 framerate:i32=120
 
 init_camera::proc(){
-    camera.zoom = .2
+    camera.zoom = 1
 
     //i need to spawn a partical at the begining for some reson
     //particle :Particle = gen_p_confetti(rl.GetScreenToWorld2D(rl.GetMousePosition(), camera))
@@ -40,6 +42,7 @@ init_maskes::proc(){
 
     light_mask = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight())
     dark_mask = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight())
+    bloom_mask = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight())
 
     rl.BeginTextureMode(light_mask)
     rl.ClearBackground(bace_light)
@@ -47,6 +50,10 @@ init_maskes::proc(){
 
     rl.BeginTextureMode(dark_mask)
     rl.ClearBackground(bace_dark)
+    rl.EndTextureMode()
+
+    rl.BeginTextureMode(bloom_mask)
+    rl.ClearBackground({255,255,255,0})
     rl.EndTextureMode()
 }
 
@@ -56,8 +63,12 @@ maintane_masks::proc(){
     screen_height:=rl.GetScreenHeight()
 
     if screane_Width_old != screen_width || screane_height_old != screen_height {
+        rl.UnloadRenderTexture(light_mask)
+        rl.UnloadRenderTexture(dark_mask)
+        rl.UnloadRenderTexture(bloom_mask)
         light_mask = rl.LoadRenderTexture(screen_width, screen_height)
         dark_mask = rl.LoadRenderTexture(screen_width, screen_height)
+        bloom_mask = rl.LoadRenderTexture(screen_width, screen_height)
         //Particle_mask = rl.LoadRenderTexture(screen_width, screen_height)
         screane_Width_old = screen_width
         screane_height_old = screen_height
@@ -68,6 +79,10 @@ maintane_masks::proc(){
 
     rl.BeginTextureMode(dark_mask)
     rl.ClearBackground(bace_dark)
+    rl.EndTextureMode()
+
+    rl.BeginTextureMode(bloom_mask)
+    rl.ClearBackground({255,255,255,0})
     rl.EndTextureMode()
 }
 
@@ -117,6 +132,11 @@ do_mg :: proc(){
 do_fg :: proc(){
     // draw_fg_t_map(temp_t_map)
     draw_world_fg_map()
+    
+}
+
+do_debug::proc(){
+    draw_world_debug_map()
 }
 
 do_ui :: proc(){

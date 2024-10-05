@@ -7,9 +7,10 @@ import "core:encoding/cbor"
 import "core:os"
 import "core:strings"
 import "core:strconv"
+import b2 "vendor:box2d"
 
-t_map_width:: 32 
-t_map_height:: 32
+t_map_width:: 64
+t_map_height:: 64
 t_map_t_size:: 32
 t_map_zoom:: 1
 
@@ -18,6 +19,8 @@ editer_mode := false
 render_edit_bg:=true
 render_edit_mg:=true
 render_edit_fg:=true
+render_edit_debug:=true
+draw_hb_mode := true
 
 curent_brush_textur:as.texture_names=as.texture_names.none
 
@@ -34,9 +37,12 @@ tile_map :: struct{
     pos:[2]i32,
     is_initialised:bool,
     tiles :[t_map_width][t_map_height]tile,
+    hb_body_id :[t_map_width][t_map_height]b2.BodyId,
+    hb_shape_id :[t_map_width][t_map_height]b2.ShapeId,
     bg_texture:rl.RenderTexture,
     mg_texture:rl.RenderTexture,
     fg_texture:rl.RenderTexture,
+    debug_texture:rl.RenderTexture,
 }
 tile_map_save_data :: struct{
     pos:[2]i32,
@@ -107,6 +113,7 @@ init_t_map :: proc(t_map:^tile_map){
     t_map.bg_texture = rl.LoadRenderTexture(t_map_width * t_map_t_size, t_map_height * t_map_t_size)
     t_map.mg_texture = rl.LoadRenderTexture(t_map_width * t_map_t_size, t_map_height * t_map_t_size)
     t_map.fg_texture = rl.LoadRenderTexture(t_map_width * t_map_t_size, t_map_height * t_map_t_size)
+    t_map.debug_texture = rl.LoadRenderTexture(t_map_width * t_map_t_size, t_map_height * t_map_t_size)
 
     rl.BeginTextureMode(t_map.bg_texture)
     rl.ClearBackground({0,0,0,0})
@@ -134,24 +141,47 @@ init_t_map :: proc(t_map:^tile_map){
         }
     }
     rl.EndTextureMode()
+    if alow_editer_mode {
+        rl.BeginTextureMode(t_map.debug_texture)
+        rl.ClearBackground({0,0,0,0})
+        for x in 0..<t_map_width {
+            for y in 0..<t_map_height {
+                if t_map.tiles[x][y].hb {
+                    //if b2.Body_IsValid(t_map.hb_body_id[x][y]) { b2.DestroyBody(t_map.hb_body_id[x][y]) } 
+                    body_id,shape_id : = create_static_tile({cast(i32)x+(t_map_width*t_map.pos.x),cast(i32)y+(t_map_height*t_map.pos.y)})
+                    t_map.hb_body_id[x][y] = body_id
+                    t_map.hb_shape_id[x][y] = shape_id 
+                    draw_texture(as.texture_names.debug_hb ,{cast(f32)( x * t_map_t_size),cast(f32)( y * t_map_t_size), t_map_t_size, t_map_t_size})
+                }
+            }
+        }
+        rl.EndTextureMode()
+    }
+
     t_map.is_initialised = true
 }
 
 draw_bg_t_map :: proc(t_map:^tile_map){
-    if render_edit_bg{
+    if render_edit_bg && t_map.is_initialised{
         rl.DrawTextureRec(t_map.bg_texture.texture, {0,0,t_map_t_size*t_map_width,+t_map_t_size*t_map_height*-1}, {cast(f32)t_map.pos[0]*t_map_width*t_map_t_size,cast(f32)t_map.pos[1]*t_map_height*t_map_t_size,},rl.WHITE)
     }
 }
 
 draw_mg_t_map :: proc(t_map:^tile_map){
-    if render_edit_mg{
+    if render_edit_mg && t_map.is_initialised{
         rl.DrawTextureRec(t_map.mg_texture.texture, {0,0,t_map_t_size*t_map_width,+t_map_t_size*t_map_height*-1}, {cast(f32)t_map.pos[0]*t_map_width*t_map_t_size,cast(f32)t_map.pos[1]*t_map_height*t_map_t_size,},rl.WHITE)
     }
 }
 
 draw_fg_t_map :: proc(t_map:^tile_map){
-    if render_edit_fg{
+    if render_edit_fg  && t_map.is_initialised{
         rl.DrawTextureRec(t_map.fg_texture.texture, {0,0,t_map_t_size*t_map_width,+t_map_t_size*t_map_height*-1}, {cast(f32)t_map.pos[0]*t_map_width*t_map_t_size,cast(f32)t_map.pos[1]*t_map_height*t_map_t_size,},rl.WHITE)
+    }
+}
+
+draw_debug_t_map :: proc(t_map:^tile_map){
+    if render_edit_debug && t_map.is_initialised{
+        rl.DrawTextureRec(t_map.debug_texture.texture, {0,0,t_map_t_size*t_map_width,+t_map_t_size*t_map_height*-1}, {cast(f32)t_map.pos[0]*t_map_width*t_map_t_size,cast(f32)t_map.pos[1]*t_map_height*t_map_t_size,},rl.WHITE)
     }
 }
 
@@ -170,6 +200,8 @@ set_t_in_t_map :: proc(t_map: ^tile_map, t_pos:[2]f32, texture: as.texture_names
     y_shift:=t_map_width*t_map.pos.y
 
     d_t_pos := t_pos
+    box_offset_x:i32=1
+    box_offset_y:i32=1
     if t_map.pos.x<0{
         d_t_pos.x=math.abs(d_t_pos.x-t_map_width)-1
     }
@@ -181,27 +213,56 @@ set_t_in_t_map :: proc(t_map: ^tile_map, t_pos:[2]f32, texture: as.texture_names
         if texture == as.texture_names.none{
             rl.BeginBlendMode(rl.BlendMode.SUBTRACT_COLORS)  
         }
-            if if_bg{
+        if if_bg{
             rl.BeginTextureMode(t_map.bg_texture)
             t_map.tiles[cast(int)d_t_pos.x][cast(int)d_t_pos.y].bg_id = texture
             draw_texture(t_map.tiles[cast(int)d_t_pos.x][cast(int)d_t_pos.y].bg_id ,{cast(f32)( cast(int)d_t_pos.x * t_map_t_size),cast(f32)( cast(int)d_t_pos.y * t_map_t_size), t_map_t_size, t_map_t_size})
             rl.EndTextureMode()
-            }
-            if if_mg{
+        }
+        if if_mg{
             rl.BeginTextureMode(t_map.mg_texture)
             t_map.tiles[cast(int)d_t_pos.x][cast(int)d_t_pos.y].mg_id = texture
             draw_texture(t_map.tiles[cast(int)d_t_pos.x][cast(int)d_t_pos.y].mg_id ,{cast(f32)( cast(int)d_t_pos.x * t_map_t_size),cast(f32)( cast(int)d_t_pos.y * t_map_t_size), t_map_t_size, t_map_t_size})
             rl.EndTextureMode()
-            }
-            if if_fg{
+        }
+        if if_fg{
             rl.BeginTextureMode(t_map.fg_texture)
             t_map.tiles[cast(int)d_t_pos.x][cast(int)d_t_pos.y].fg_id = texture
             draw_texture(t_map.tiles[cast(int)d_t_pos.x][cast(int)d_t_pos.y].fg_id ,{cast(f32)( cast(int)d_t_pos.x * t_map_t_size),cast(f32)( cast(int)d_t_pos.y * t_map_t_size), t_map_t_size, t_map_t_size})
             rl.EndTextureMode()
-            }
-        //if texture == as.texture_names.none{
+        }
+        if texture == as.texture_names.none{
             rl.EndBlendMode() 
-        //}
+        }
+        if draw_hb_mode {
+            rl.BeginTextureMode(t_map.debug_texture)
+            if b2.Body_IsValid(t_map.hb_body_id[cast(i32)d_t_pos.x][cast(i32)d_t_pos.y]) { b2.DestroyBody(t_map.hb_body_id[cast(i32)d_t_pos.x][cast(i32)d_t_pos.y]) } 
+            body_id,shape_id : =create_static_tile({cast(i32)d_t_pos.x+(t_map_width*t_map.pos.x),cast(i32)d_t_pos.y+(t_map_height*t_map.pos.y)})
+            fmt.print(cast(i32)d_t_pos.x+(t_map_width*t_map.pos.x),cast(i32)d_t_pos.y+(t_map_height*t_map.pos.y)," pos \n")
+        
+
+            t_map.hb_body_id[cast(i32)d_t_pos.x][cast(i32)d_t_pos.y] = body_id
+            t_map.hb_shape_id[cast(i32)d_t_pos.x][cast(i32)d_t_pos.y] = shape_id 
+            t_map.tiles[cast(i32)d_t_pos.x][cast(i32)d_t_pos.y].hb = true
+            draw_texture(as.texture_names.debug_hb ,{cast(f32)( cast(int)d_t_pos.x * t_map_t_size),cast(f32)( cast(int)d_t_pos.y * t_map_t_size), t_map_t_size, t_map_t_size})
+            rl.EndTextureMode()
+        }
+    }
+}
+
+unlode_t_map::proc(t_map: ^tile_map){
+    if t_map.is_initialised {
+        rl.UnloadRenderTexture(t_map.bg_texture)
+        rl.UnloadRenderTexture(t_map.mg_texture)
+        rl.UnloadRenderTexture(t_map.fg_texture)
+        rl.UnloadRenderTexture(t_map.debug_texture)
+        for x in 0..<t_map_width {
+            for y in 0..<t_map_height {
+                
+                if b2.Body_IsValid(t_map.hb_body_id[x][y]) { b2.DestroyBody(t_map.hb_body_id[x][y]) } 
+            }
+        }
+        t_map.is_initialised = false
     }
 }
 
@@ -247,6 +308,12 @@ draw_on_world_map :: proc(world_map: ^World_map){
     if rl.IsMouseButtonDown(.LEFT) {
         if world_map.t_maps[{cast(i32)t_map_pos_x,cast(i32)t_map_pos_y}].is_initialised{
             set_t_in_t_map(&world_map.t_maps[{cast(i32)t_map_pos_x,cast(i32)t_map_pos_y}],tp,curent_brush_textur,render_edit_bg,render_edit_mg,render_edit_fg)
+        }else{
+            new_t_map:tile_map
+            new_t_map.pos = {cast(i32)t_map_pos_x,cast(i32)t_map_pos_y}
+            fill_t_map(&new_t_map,as.texture_names.none)
+            init_t_map(&new_t_map)
+            world_map.t_maps[{cast(i32)t_map_pos_x,cast(i32)t_map_pos_y}] = new_t_map
         }
     }
 
@@ -254,6 +321,9 @@ draw_on_world_map :: proc(world_map: ^World_map){
 }
 
 add_t_map_to_world_map :: proc(t_map:^tile_map, World_map:^World_map  ){
+    if World_map.t_maps[t_map.pos].is_initialised {
+        unlode_t_map(t_map)
+    }
     World_map.t_maps[t_map.pos] = t_map^
 }
 
@@ -270,6 +340,11 @@ draw_world_mg_map :: proc(){
 draw_world_fg_map :: proc(){
     for key in Curent_world_map.t_maps {
         draw_fg_t_map(&Curent_world_map.t_maps[key])
+    }
+}
+draw_world_debug_map :: proc(){
+    for key in Curent_world_map.t_maps {
+        draw_debug_t_map(&Curent_world_map.t_maps[key])
     }
 }
 

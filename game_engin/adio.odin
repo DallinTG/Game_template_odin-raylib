@@ -17,7 +17,7 @@ sound_byte::struct{
 defalt_sound_intesity:f32:5000
 
 play_sound_at_pos::proc(s_name:as.sound_names,pos:[2]f32){
-    cam := camera.target+{cast(f32)rl.GetScreenWidth()*2,cast(f32)rl.GetScreenHeight()*2}
+    cam := camera.target+{(cast(f32)rl.GetScreenWidth()/camera.zoom)/2,(cast(f32)rl.GetScreenHeight()/camera.zoom)/2}
     sound:=rl.LoadSoundAlias(as.sounds[s_name])
     rl.SetSoundPan(sound, math.lerp(cast(f32)1,cast(f32)0,cast(f32)(pos.x-cam.x+(defalt_sound_intesity/2))/defalt_sound_intesity))
     //fmt.print(math.lerp(cast(f32)1,cast(f32)0,cast(f32)(pos.x-cam.x+(defalt_sound_intesity/2))/defalt_sound_intesity),"  ")
@@ -34,8 +34,23 @@ play_sound_at_pos::proc(s_name:as.sound_names,pos:[2]f32){
     append(&sound_aliases, s_bty)
     
 }
+play_sound_byte::proc(sound_:sound_byte){
+    cam := camera.target+{(cast(f32)rl.GetScreenWidth()/camera.zoom)/2,(cast(f32)rl.GetScreenHeight()/camera.zoom)/2}
+    sound:=rl.LoadSoundAlias(as.sounds[sound_.name])
+    rl.SetSoundPan(sound, math.lerp(cast(f32)1,cast(f32)0,cast(f32)(sound_.pos.x-cam.x+(defalt_sound_intesity/2))/defalt_sound_intesity))
+    //fmt.print(math.lerp(cast(f32)1,cast(f32)0,cast(f32)(pos.x-cam.x+(defalt_sound_intesity/2))/defalt_sound_intesity),"  ")
+    rl.SetSoundVolume(sound,math.clamp(math.abs(math.lerp(cast(f32)0,cast(f32)1,math.sqrt(math.pow_f32(cam.x-sound_.pos.x,2)+math.pow_f32(cam.y-sound_.pos.y,2))/defalt_sound_intesity)),0,1)*-1)
+    //fmt.print(math.clamp(math.abs(math.lerp(cast(f32)0,cast(f32)1,math.sqrt(math.pow_f32(cam.x-pos.x,2)+math.pow_f32(cam.y-pos.y,2))/defalt_sound_intesity)),0,1)*-1,"   \n")
+
+
+    rl.PlaySound(sound)
+
+    append(&sound_aliases, sound_)
+    
+}
+
 manage_sound_bytes::proc(){
-    cam := camera.target+{cast(f32)rl.GetScreenWidth()*2,cast(f32)rl.GetScreenHeight()*2}
+    cam := camera.target+{(cast(f32)rl.GetScreenWidth()/camera.zoom)/2,(cast(f32)rl.GetScreenHeight()/camera.zoom)/2}
     for sound_byte,i in sound_aliases{
         if rl.IsSoundPlaying(sound_byte.sound){
             if sound_byte.has_pos{

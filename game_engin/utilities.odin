@@ -49,6 +49,8 @@ get_time_util::proc(){
 
 every_1_s::proc(){
     // fmt.print(rl.GetTime()," one second has elapsed \n")
+    create_simp_cube_entity({0,0},{32,32})
+    // fmt.print(len(sprite_rendering_q),"\n")
 }
 every_1_2_s::proc(){
     // fmt.print(rl.GetTime()," one second has elapsed \n")
@@ -60,9 +62,12 @@ every_1_8_s::proc(){
     // fmt.print(rl.GetTime()," one second has elapsed \n")
 }
 every_1_16_s::proc(){
+    create_simp_cube_entity({0,0},{32,32})
+
+
     // fmt.print(rl.GetTime()," one second has elapsed \n")
     // sound:=rl.LoadSoundAlias(as.sounds[as.sound_names.eat])
     // rl.SetSoundPan(sound, 4)
     // rl.PlaySound(sound)
-    play_sound_at_pos(as.sound_names.s_paper_swipe,{0,0})
+    //play_sound_at_pos(as.sound_names.s_paper_swipe,{0,0})
 }

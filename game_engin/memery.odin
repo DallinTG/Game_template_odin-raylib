@@ -14,4 +14,5 @@ free_memery::proc(){
     delete(light_buffer)
     free(all_particles)
     delete(as.atlases)
+    cleanup_box_2d()
 }

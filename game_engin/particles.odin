@@ -26,7 +26,10 @@ Particle :: struct{
     light_size_e:f32,
     light_color_s:[4]f32,
     light_color_e:[4]f32,
-    
+    bloom_size_s:f32,
+    bloom_intensity_s:f32,
+    bloom_size_e:f32,
+    bloom_intensity_e:f32,
 }
 
 max_particles:: 2000
@@ -73,6 +76,16 @@ calculate_particles_light::proc(){
                 color := rl.ColorFromNormalized(math.lerp(particle.light_color_e,particle.light_color_s,cast(f32)particle.life/particle.max_life))
                 size :=  math.lerp(particle.light_size_e,particle.light_size_s,cast(f32)particle.life/particle.max_life)
                 draw_colored_light(all_particles[i].xy,size,color)
+        }
+    }
+}
+calculate_particles_bloom::proc(){
+    particles: #soa[]Particle = all_particles[0 : particle_count]
+        #reverse for particle, i in particles {
+            if all_particles[i].is_light{   
+                color := rl.ColorAlpha(rl.ColorFromNormalized(math.lerp(particle.light_color_e,particle.light_color_s,cast(f32)particle.life/particle.max_life)),math.lerp(particle.bloom_intensity_e,particle.bloom_intensity_s,cast(f32)particle.life/particle.max_life))
+                size :=  math.lerp(particle.light_size_e,particle.light_size_s,cast(f32)particle.life/particle.max_life)*math.lerp(particle.bloom_size_e,particle.bloom_size_s,cast(f32)particle.life/particle.max_life)
+                draw_colored_bloom(all_particles[i].xy,size,color)
         }
     }
 }
@@ -160,7 +173,7 @@ rand_mix_p_all::proc(particle_1:Particle, particle_2:Particle) -> Particle {
 }
 
 gen_p_confetti::proc(xy_1:rl.Vector2) -> Particle{
-    confetti_1 :Particle= {xy_1, 4.50,4.50, {-400,-400},{-100,-100},-720,-720,{0,-300}, {-100,-50},{-100,-50}, {0,0,0,1}, {0,0,0,0},as.textures[as.texture_names.square],1,true,200,0,{1,0,0,1},{1,0,0,0}}
-    confetti_2 :Particle= {xy_1, 4.50,4.50, {400,400},{100,100},720,720,{0,-300}, {100,50},{100,50}, {1,1,1,1}, {1,1,1,0},as.textures[as.texture_names.square],1,true,200,0,{1,0,0,1},{1,0,0,0}}
+    confetti_1 :Particle= {xy_1, 4.50,4.50, {-400,-400},{-100,-100},-720,-720,{0,-300}, {-100,-50},{-100,-50}, {0,0,0,1}, {0,0,0,0},as.textures[as.texture_names.square],1,true,200,0,{1,0,0,1},{1,0,0,0},.5,.2,0,0}
+    confetti_2 :Particle= {xy_1, 4.50,4.50, {400,400},{100,100},720,720,{0,-300}, {100,50},{100,50}, {1,1,1,1}, {1,1,1,0},as.textures[as.texture_names.square],1,true,200,0,{1,0,0,1},{1,0,0,0},.5,.2,0,0}
     return rand_mix_p_all(confetti_1,confetti_2)
 }
