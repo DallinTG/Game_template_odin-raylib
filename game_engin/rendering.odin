@@ -12,9 +12,11 @@ sprite::struct {
     rotation:f32,
     rec:rl.Rectangle,
     origin:rl.Vector2,
-    frame_index:int,
     color:rl.Color,
-    name:as.texture_names,
+    curent_frame:int,
+    texture_name:as.texture_names,
+    frame_timer:f32,
+    frames_per_second:int,
 }
 sprite_rendering_q:=make([dynamic]^sprite)
 temp_sprite_buffer:=make([dynamic]sprite)
@@ -23,6 +25,7 @@ this_frame_camera_target:=camera.target
 light_mask:rl.RenderTexture 
 dark_mask:rl.RenderTexture 
 bloom_mask:rl.RenderTexture 
+ui_mask:rl.RenderTexture 
 //Particle_mask:rl.RenderTexture2D
 
 screane_Width_old :i32
@@ -43,6 +46,7 @@ init_maskes::proc(){
     light_mask = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight())
     dark_mask = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight())
     bloom_mask = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight())
+    ui_mask = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight())
 
     rl.BeginTextureMode(light_mask)
     rl.ClearBackground(bace_light)
@@ -53,7 +57,11 @@ init_maskes::proc(){
     rl.EndTextureMode()
 
     rl.BeginTextureMode(bloom_mask)
-    rl.ClearBackground({255,255,255,0})
+    rl.ClearBackground({0,0,0,0})
+    rl.EndTextureMode()
+
+    rl.BeginTextureMode(ui_mask)
+    rl.ClearBackground({0,0,0,0})
     rl.EndTextureMode()
 }
 
@@ -66,9 +74,11 @@ maintane_masks::proc(){
         rl.UnloadRenderTexture(light_mask)
         rl.UnloadRenderTexture(dark_mask)
         rl.UnloadRenderTexture(bloom_mask)
+        rl.UnloadRenderTexture(ui_mask)
         light_mask = rl.LoadRenderTexture(screen_width, screen_height)
         dark_mask = rl.LoadRenderTexture(screen_width, screen_height)
         bloom_mask = rl.LoadRenderTexture(screen_width, screen_height)
+        ui_mask = rl.LoadRenderTexture(screen_width, screen_height)
         //Particle_mask = rl.LoadRenderTexture(screen_width, screen_height)
         screane_Width_old = screen_width
         screane_height_old = screen_height
@@ -82,7 +92,11 @@ maintane_masks::proc(){
     rl.EndTextureMode()
 
     rl.BeginTextureMode(bloom_mask)
-    rl.ClearBackground({255,255,255,0})
+    rl.ClearBackground({0,0,0,0})
+    rl.EndTextureMode()
+
+    rl.BeginTextureMode(ui_mask)
+    rl.ClearBackground({0,0,0,0})
     rl.EndTextureMode()
 }
 
@@ -110,7 +124,9 @@ draw_texture::proc(name : as.texture_names ,rec:rl.Rectangle,origin:rl.Vector2={
 }
 
 draw_sprite::proc(sprite:sprite){
-    rl.DrawTexturePro(as.atlases[as.textures[sprite.name].atlas_index].render_texture.texture, as.textures[sprite.name].rectangle[sprite.frame_index], sprite.rec, sprite.origin, sprite.rotation, sprite.color)
+
+    draw_texture(sprite.texture_name,sprite.rec,sprite.origin,sprite.rotation,sprite.color,sprite.curent_frame)
+    // rl.DrawTexturePro(as.atlases[as.textures[sprite.name].atlas_index].render_texture.texture, as.textures[sprite.name].rectangle[sprite.frame_index], sprite.rec, sprite.origin, sprite.rotation, sprite.color)
 }
 
 
@@ -140,8 +156,10 @@ do_debug::proc(){
 }
 
 do_ui :: proc(){
-    if settings_game.video.show_fps{rl.DrawFPS(10, 10)}
-    do_ui_t_editor()
-    do_ui_menu()
+    draw_ui_mask()
+    // if settings_game.video.show_fps{rl.DrawFPS(10, 10)}
+    // do_ui_t_editor()
+    // do_ui_menu()
+    // checking_guis()
 }
 

@@ -54,15 +54,12 @@ render_bloom_q::proc(){
 }
 
 do_lightting::proc(){
-    maintane_masks()
+    // maintane_masks()
     //fmt.print("\n\n",light_rendering_q,"\n\n")
     rl.BeginTextureMode(light_mask)
     rl.BeginBlendMode(rl.BlendMode.ALPHA_PREMULTIPLY)  
     render_light_q()
-    calculate_particles_light()
-    // draw_simple_light({50,50},50)
-    // draw_simple_light({150,150},50)
-    // draw_simple_light({300,300},50)
+    draw_all_particles_light()
     rl.EndBlendMode()
     rl.EndTextureMode()
 
@@ -73,10 +70,7 @@ do_bloom::proc(){
     rl.BeginTextureMode(bloom_mask)
     rl.BeginBlendMode(rl.BlendMode.ALPHA_PREMULTIPLY)  
     render_bloom_q()
-    calculate_particles_bloom()
-    // draw_simple_light({50,50},500)
-    // draw_simple_light({150,150},500)
-    // draw_simple_light({300,300},500)
+    draw_all_particles_bloom()
     rl.EndBlendMode()
     rl.EndTextureMode()
 }

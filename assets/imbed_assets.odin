@@ -33,6 +33,8 @@ none,
 	redstone_engineering,
 	signalum_ingot,
 	slot,
+	smooth_stone_brick,
+	smooth_stone_brick_side,
 	space,
 	space_2,
 	space_3,
@@ -41,6 +43,7 @@ none,
 	space_6,
 	space_6_copy,
 	square,
+	stone_brick,
 	test,
 }
 
@@ -78,6 +81,7 @@ music_names :: enum {
 tile_map_names :: enum {
 	none,
 	pos_0_0,
+	pos_n1_0,
 }
 
 world_map_names :: enum {
@@ -108,6 +112,8 @@ world_map_names :: enum {
 		.redstone_engineering = { path = "textures/redstone_engineering.png", path_hash = 15710039393131326869, data = #load("textures/redstone_engineering.png"),info = #load("textures/redstone_engineering.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.signalum_ingot = { path = "textures/signalum_ingot.png", path_hash = 9220798395061397675, data = #load("textures/signalum_ingot.png"),info = #load("textures/signalum_ingot.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.slot = { path = "textures/slot.png", path_hash = 980004971222327857, data = #load("textures/slot.png"),info = #load("textures/slot.txt",cstring) or_else #load("textures/default.txt", cstring), },
+		.smooth_stone_brick = { path = "textures/smooth_stone_brick.png", path_hash = 7879108188018242015, data = #load("textures/smooth_stone_brick.png"),info = #load("textures/smooth_stone_brick.txt",cstring) or_else #load("textures/default.txt", cstring), },
+		.smooth_stone_brick_side = { path = "textures/smooth_stone_brick_side.png", path_hash = 1665871021801579726, data = #load("textures/smooth_stone_brick_side.png"),info = #load("textures/smooth_stone_brick_side.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.space = { path = "textures/space.png", path_hash = 15929091025269918601, data = #load("textures/space.png"),info = #load("textures/space.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.space_2 = { path = "textures/space_2.png", path_hash = 15114738339118189970, data = #load("textures/space_2.png"),info = #load("textures/space_2.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.space_3 = { path = "textures/space_3.png", path_hash = 8840834339669454624, data = #load("textures/space_3.png"),info = #load("textures/space_3.txt",cstring) or_else #load("textures/default.txt", cstring), },
@@ -116,6 +122,7 @@ world_map_names :: enum {
 		.space_6 = { path = "textures/space_6.png", path_hash = 15458173398917068474, data = #load("textures/space_6.png"),info = #load("textures/space_6.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.space_6_copy = { path = "textures/space_6_Copy.png", path_hash = 11124607320499186961, data = #load("textures/space_6_Copy.png"),info = #load("textures/space_6_Copy.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.square = { path = "textures/square.png", path_hash = 4981428206918530665, data = #load("textures/square.png"),info = #load("textures/square.txt",cstring) or_else #load("textures/default.txt", cstring), },
+		.stone_brick = { path = "textures/stone_brick.png", path_hash = 9854756531852246637, data = #load("textures/stone_brick.png"),info = #load("textures/stone_brick.txt",cstring) or_else #load("textures/default.txt", cstring), },
 		.test = { path = "textures/test.png", path_hash = 9959172591819369990, data = #load("textures/test.png"),info = #load("textures/test.txt",cstring) or_else #load("textures/default.txt", cstring), },
 	}
 
@@ -153,6 +160,7 @@ world_map_names :: enum {
 	all_tile_maps := [tile_map_names]asset {
 		.none = {},
 		.pos_0_0 = { path = "tile_maps/pos_0_0.tmap", path_hash = 9625980316099917482, data = #load("tile_maps/pos_0_0.tmap"), },
+		.pos_n1_0 = { path = "tile_maps/pos_N1_0.tmap", path_hash = 8508157100387709519, data = #load("tile_maps/pos_N1_0.tmap"), },
 	}
 
 	all_world_map := [world_map_names]asset {

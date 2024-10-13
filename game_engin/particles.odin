@@ -5,6 +5,7 @@ import as "../assets"
 import "core:fmt"
 import "core:math"
 import "core:math/rand"
+import "core:thread"
 
 Particle :: struct{
     xy: rl.Vector2,
@@ -19,7 +20,9 @@ Particle :: struct{
     size_e: rl.Vector2,
     color_s:[4]f32,
     color_e:[4]f32,
-    texture: as.textur_info,
+    texture_name:as.texture_names,
+    curent_frame:int,
+    frame_timer:f32,
     frames_per_second:int,
     is_light:bool,
     light_size_s:f32,
@@ -39,23 +42,22 @@ shader: rl.Shader
 
 calculate_particles::proc(){
     delta :f32= rl.GetFrameTime()
-    //rl.BeginTextureMode(Particle_mask)
-    //rl.BeginDrawing()
-    //rl.ClearBackground({0,0,0,0})
     if particle_count > 0{
         particles: #soa[]Particle = all_particles[0 : particle_count]
         #reverse for particle, i in particles {
             all_particles[i].life -= delta
-            all_particles[i].texture.frame_timer += delta
-            if all_particles[i].texture.frames !=0 {
-                for all_particles[i].texture.frame_timer > cast(f32)all_particles[i].texture.frame_rate {
-                    all_particles[i].texture.frame_timer -= cast(f32)all_particles[i].texture.frame_rate
-                    all_particles[i].texture.curent_frame +=1
+            all_particles[i].frame_timer += delta
+            if as.textures[all_particles[i].texture_name].frames !=0 {
+                for all_particles[i].frame_timer > cast(f32)as.textures[all_particles[i].texture_name].frame_rate {
+                    all_particles[i].frame_timer -= cast(f32)as.textures[all_particles[i].texture_name].frame_rate
+                    // all_particles[i].texture.curent_frame +=1
+                    all_particles[i].curent_frame +=1
                 }
-                
-                //fmt.print(all_particles[i].texture.curent_frame)
-                if all_particles[i].texture.curent_frame+1 > all_particles[i].texture.frames{
-                    all_particles[i].texture.curent_frame = 0
+                // if all_particles[i].texture.curent_frame+1 > all_particles[i].texture.frames{
+                //     all_particles[i].texture.curent_frame = 0
+                // }
+                if all_particles[i].curent_frame+1 > as.textures[all_particles[i].texture_name].frames{
+                    all_particles[i].curent_frame = 0
                 }
             }
             p_kinematics(i,delta)
@@ -63,29 +65,40 @@ calculate_particles::proc(){
                 all_particles[i] = all_particles[particle_count-1]
                 particle_count -=1
             }
+            // draw_particle(all_particles[i])
+            
+        }
+    }
+}
+// calculate_particles::proc(){
+//     // thread.pool_add_task(&pool, allocator=context.allocator, procedure=calculate_particles_thred, data=nil, user_index=1)
+// }
+draw_all_particle::proc(){
+    if particle_count > 0{
+        particles: #soa[]Particle = all_particles[0 : particle_count]
+        #reverse for particle, i in particles {
             draw_particle(all_particles[i])
         }
     }
-   // rl.EndTextureMode()
-    //rl.EndDrawing()
 }
-calculate_particles_light::proc(){
+
+draw_all_particles_light::proc(){
     particles: #soa[]Particle = all_particles[0 : particle_count]
         #reverse for particle, i in particles {
             if all_particles[i].is_light{   
                 color := rl.ColorFromNormalized(math.lerp(particle.light_color_e,particle.light_color_s,cast(f32)particle.life/particle.max_life))
                 size :=  math.lerp(particle.light_size_e,particle.light_size_s,cast(f32)particle.life/particle.max_life)
-                draw_colored_light(all_particles[i].xy,size,color)
+                 draw_colored_light(all_particles[i].xy,size,color)
         }
     }
 }
-calculate_particles_bloom::proc(){
+draw_all_particles_bloom::proc(){
     particles: #soa[]Particle = all_particles[0 : particle_count]
         #reverse for particle, i in particles {
             if all_particles[i].is_light{   
                 color := rl.ColorAlpha(rl.ColorFromNormalized(math.lerp(particle.light_color_e,particle.light_color_s,cast(f32)particle.life/particle.max_life)),math.lerp(particle.bloom_intensity_e,particle.bloom_intensity_s,cast(f32)particle.life/particle.max_life))
                 size :=  math.lerp(particle.light_size_e,particle.light_size_s,cast(f32)particle.life/particle.max_life)*math.lerp(particle.bloom_size_e,particle.bloom_size_s,cast(f32)particle.life/particle.max_life)
-                draw_colored_bloom(all_particles[i].xy,size,color)
+                 draw_colored_bloom(all_particles[i].xy,size,color)
         }
     }
 }
@@ -109,7 +122,7 @@ draw_particle::proc(particle: Particle){
     color := rl.ColorFromNormalized(math.lerp(particle.color_e,particle.color_s,cast(f32)particle.life/particle.max_life))
 //camra is biult in to this one
     //draw_texture(particle.texture.name,rl.Rectangle{x,y,size.x * camera.zoom,size.y * camera.zoom},size/2 * camera.zoom, angle, color,particle.texture.curent_frame)
-    draw_texture(particle.texture.name,rl.Rectangle{x,y,size.x,size.y},size/2, angle, color,particle.texture.curent_frame)
+    draw_texture(particle.texture_name,rl.Rectangle{x,y,size.x,size.y},size/2, angle, color,particle.curent_frame)
 }
 
 
@@ -173,7 +186,7 @@ rand_mix_p_all::proc(particle_1:Particle, particle_2:Particle) -> Particle {
 }
 
 gen_p_confetti::proc(xy_1:rl.Vector2) -> Particle{
-    confetti_1 :Particle= {xy_1, 4.50,4.50, {-400,-400},{-100,-100},-720,-720,{0,-300}, {-100,-50},{-100,-50}, {0,0,0,1}, {0,0,0,0},as.textures[as.texture_names.square],1,true,200,0,{1,0,0,1},{1,0,0,0},.5,.2,0,0}
-    confetti_2 :Particle= {xy_1, 4.50,4.50, {400,400},{100,100},720,720,{0,-300}, {100,50},{100,50}, {1,1,1,1}, {1,1,1,0},as.textures[as.texture_names.square],1,true,200,0,{1,0,0,1},{1,0,0,0},.5,.2,0,0}
+    confetti_1 :Particle= {xy=xy_1, life=4.50,max_life=4.50, velocity={-400,-400},acceleration={-100,-100},angle_s= -720,angle_e= -720,grav={0,-300}, size_s={-100,-50},size_e={-100,-50}, color_s={0,0,0,1}, color_e={0,0,0,0},texture_name=as.texture_names.square,frames_per_second=1,is_light=true,light_size_s=200,light_size_e=0,light_color_s={1,0,0,1},light_color_e={1,0,0,0},bloom_size_s=.2,bloom_intensity_s=.2,bloom_size_e=0,bloom_intensity_e=0}
+    confetti_2 :Particle= {xy=xy_1, life=4.50,max_life=4.50, velocity={400,400},acceleration={100,100},angle_s= 720,angle_e= 720,grav={0,-300}, size_s={100,50},size_e={100,50}, color_s={1,1,1,1}, color_e={1,1,1,0},texture_name=as.texture_names.square,frames_per_second=1,is_light=true,light_size_s=200,light_size_e=0,light_color_s={1,0,0,1},light_color_e={1,0,0,0},bloom_size_s=.2,bloom_intensity_s=.2,bloom_size_e=0,bloom_intensity_e=0}
     return rand_mix_p_all(confetti_1,confetti_2)
 }

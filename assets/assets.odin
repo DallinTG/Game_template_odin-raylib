@@ -30,10 +30,10 @@ textur_info::struct{
     name:texture_names,
     atlas_index:int,
     frames:int,
-    curent_frame:int,
+    // curent_frame:int,
     frame_hieght:int,
     frame_whidth:int,
-    frame_timer:f32,
+    // frame_timer:f32,
     frame_rate:f64,
     rectangle:[dynamic]rl.Rectangle,
     

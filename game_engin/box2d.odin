@@ -19,10 +19,12 @@ init_box_2d::proc(){
 
     box_2d_world_def :b2.WorldDef = b2.DefaultWorldDef()
     box_2d_world_def.gravity.y = world_grav * lengthUnitsPerMeter
+
     // box_2d_world_def.workerCount = 4;
     // box_2d_world_def.enqueueTask = myAddTaskFunction
     // box_2d_world_def.finishTask = myFinishTaskFunction
     // box_2d_world_def.userTaskContext = &myTaskSystem
+
     box_2d_world_id = b2.CreateWorld(box_2d_world_def)
 }
 sim_box_2d::proc(){

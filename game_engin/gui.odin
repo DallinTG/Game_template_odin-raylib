@@ -11,13 +11,26 @@ pading:f32:4
 init_gui :: proc (){
     
 }
+draw_ui_mask::proc(){ 
+    // cord := this_frame_camera_target
+    cord :[2]f32= {0,0}
+    rl.DrawTexturePro(ui_mask.texture,{0,0,cast(f32)ui_mask.texture.width,cast(f32)ui_mask.texture.height * -1},{cord.x, cord.y, cast(f32)ui_mask.texture.width / camera.zoom,cast(f32)ui_mask.texture.height / camera.zoom},{0,0},0,rl.WHITE)
+}
+draw_and_calculate_ui::proc(){
+    rl.BeginTextureMode(ui_mask)
+    if settings_game.video.show_fps{rl.DrawFPS(10, 10)}
+    do_ui_t_editor()
+    do_ui_menu()
+    checking_guis()
+    rl.EndTextureMode()
+}
 checking_guis::proc(){
-    check_editer_mode()
     if rl.IsKeyPressed(.ESCAPE){
         menu_show = !menu_show 
         menu_panel.pos.x = cast(f32)rl.GetScreenWidth()/2  - menu_panel.w_h.x/2
         menu_panel.pos.y = cast(f32)rl.GetScreenHeight()/2 - menu_panel.w_h.y/2
     }
+    check_editer_mode()
 }
 
 editor_show : bool 
@@ -38,9 +51,11 @@ do_ui_t_editor :: proc(){
             render_gui_spinner(&editor_panel,&editer_spinner,&editor_curent_page,&editer_spinner_mode)  // Gui page tab
             render_gui_textur_icons(editer_icon_button.pos_offset.x,editer_icon_button.pos_offset.y,0,0)                                          
             if render_gui_button(&editor_panel,&editer_exit_button) {editor_show = false}               // X button
+            consume_click_in_panel(editor_panel)
         }
     }
 }
+
 
 menu_show : bool
 menu_panel :gui_panel = {{10,cast(f32)rl.GetScreenHeight()/2},{317,400},25,"Menu",false}
@@ -51,6 +66,7 @@ do_ui_menu :: proc(){
         render_gui_panel(&menu_panel)  // maine panel everything is relitive to this                                        
         if render_gui_button(&menu_panel,&menu_exit_button) {menu_show = false}               // X button
         if render_gui_button(&menu_panel,&menu_exit_to_desktop_button) {window_should_close = true}
+        consume_click_in_panel(menu_panel)
     }
 }
 
@@ -67,14 +83,15 @@ render_gui_textur_icons::proc(shrink_l_x:f32,shrink_u_y:f32,shrink_r_x:f32,shrin
 
     index:i32=0
     button :gui_button={{0,0},{editer_icon_size,editer_icon_size}," "}
-    for textur_info in as.textures{
+    for new_tile_id in tile_id{
         page_index := index % ((slot_by_x * slot_by_y))
         button.pos_offset ={ cast(f32)(page_index % slot_by_x)*(editer_icon_size+editer_icon_pading)+pos_x, cast(f32)(page_index / slot_by_x)*(editer_icon_size+editer_icon_pading)+pos_y}
         if index > ((slot_by_x * slot_by_y)*(editor_curent_page-1)-1)&&index < ((slot_by_x * slot_by_y)*(editor_curent_page)){
             button_c :bool
-            if render_gui_button_textur(&editor_panel,&button,textur_info.name) {button_c = true} 
+            if render_gui_button_textur(&editor_panel,&button,all_tile_data[new_tile_id].bace_t_name) {button_c = true} 
             if button_c{
-                curent_brush_textur = textur_info.name
+                curent_brush_t = new_tile_id
+                
             }
         }
         index = index+1
@@ -94,6 +111,7 @@ render_gui_panel :: proc(gui_panel:^gui_panel){
         mouse_pos := rl.GetMousePosition()
         if gui_panel.nav_bar_moving {
             gui_panel.pos = gui_panel.pos+rl.GetMouseDelta()
+            // key.m_left_d = false
         }else{
             if mouse_pos.x > gui_panel.pos.x && mouse_pos.x < gui_panel.pos.x + gui_panel.w_h.x && mouse_pos.y > gui_panel.pos.y && mouse_pos.y < gui_panel.pos.y + gui_panel.nav_bar_size {
                 gui_panel.nav_bar_moving = true
@@ -117,6 +135,14 @@ render_gui_panel :: proc(gui_panel:^gui_panel){
         }
     }
     rl.GuiPanel({gui_panel.pos.x ,gui_panel.pos.y ,gui_panel.w_h.x ,gui_panel.w_h.y},gui_panel.name)
+}
+consume_click_in_panel::proc(gui_panel:gui_panel){
+    if gui_panel.pos.x < rl.GetMousePosition().x && gui_panel.pos.y < rl.GetMousePosition().y &&gui_panel.pos.x+gui_panel.w_h.x > rl.GetMousePosition().x && gui_panel.pos.y+gui_panel.w_h.y > rl.GetMousePosition().y {
+        key.m_left_d = false
+        key.m_left_p = false
+        key.m_right_d = false
+        key.m_right_p = false
+    }
 }
 
 gui_spinner::struct {
