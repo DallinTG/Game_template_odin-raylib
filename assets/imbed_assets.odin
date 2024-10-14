@@ -80,8 +80,6 @@ music_names :: enum {
 
 tile_map_names :: enum {
 	none,
-	pos_0_0,
-	pos_n1_0,
 }
 
 world_map_names :: enum {
@@ -159,8 +157,6 @@ world_map_names :: enum {
 
 	all_tile_maps := [tile_map_names]asset {
 		.none = {},
-		.pos_0_0 = { path = "tile_maps/pos_0_0.tmap", path_hash = 9625980316099917482, data = #load("tile_maps/pos_0_0.tmap"), },
-		.pos_n1_0 = { path = "tile_maps/pos_N1_0.tmap", path_hash = 8508157100387709519, data = #load("tile_maps/pos_N1_0.tmap"), },
 	}
 
 	all_world_map := [world_map_names]asset {

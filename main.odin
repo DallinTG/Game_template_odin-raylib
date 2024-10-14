@@ -33,12 +33,12 @@ init_startup::proc(){
 main :: proc() {
     init_startup()
 
-    temptmap := ge.lode_t_map_from_bi(as.all_tile_maps[as.tile_map_names.pos_0_0].data)
-    ge.init_t_map(&temptmap)
-    ge.add_t_map_to_world_map(&temptmap, &ge.Curent_world_map)
-    temptmap.pos.x = -1
-    ge.init_t_map(&temptmap)
-    ge.add_t_map_to_world_map(&temptmap, &ge.Curent_world_map)
+    // temptmap := ge.lode_t_map_from_bi(as.all_tile_maps[as.tile_map_names.pos_0_0].data)
+    // ge.init_t_map(&temptmap)
+    // ge.add_t_map_to_world_map(&temptmap, &ge.Curent_world_map)
+    // temptmap.pos.x = -1
+    // ge.init_t_map(&temptmap)
+    // ge.add_t_map_to_world_map(&temptmap, &ge.Curent_world_map)
 
 
     
