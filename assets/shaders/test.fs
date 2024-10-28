@@ -18,7 +18,7 @@ void main()
     vec4 t_darknes = texture(darknes,fragTexCoord);
 
 
-    finalColor = vec4((t_darknes.rgb+t_lights.rgb), t_darknes.a-t_lights.a);
+    finalColor = vec4((t_darknes.rgb+t_lights.rgb), t_darknes.a-(t_lights.a));
 
 
 }

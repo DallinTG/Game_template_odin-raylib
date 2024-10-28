@@ -11,6 +11,7 @@ settings::struct{
 }
 settings_video::struct{
     show_fps:bool,
+    ui_scale:f32,
 }
 settings_adio::struct{
     maine_volume:f32,
@@ -27,6 +28,7 @@ init_settings::proc(){
     settings_game.adio.ui_volume=1
 
     settings_game.video.show_fps=true
+    settings_game.video.ui_scale=1.5
 }
 save_settings::proc(){
 

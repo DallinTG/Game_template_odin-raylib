@@ -81,7 +81,7 @@ init_texturs::proc(){
         //fmt.println(images.image.height)
         //fmt.println(images.name)
         //fmt.println(i)
-        //fmt.println(strings.split(cast(string)images.info,","))
+        // fmt.println(strings.split(cast(string)images.info,","))
 
         texture := rl.LoadTextureFromImage(images.image)
         

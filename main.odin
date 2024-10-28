@@ -7,19 +7,23 @@ import rl "vendor:raylib"
 import "core:os"
 import "core:slice"
 import "core:encoding/cbor"
-
+import "core:math"
 
 
 init_startup::proc(){
     rl.SetConfigFlags({.WINDOW_RESIZABLE})
     // rl.SetTargetFPS(ge.framerate)
+    // rl.SetTargetFPS(60)
     ge.init_memery()
     ge.init_threads()
     rl.InitWindow(800, 800, "test")
     rl.InitAudioDevice()
     rl.SetExitKey(.KEY_NULL)
     ge.init_settings()
+    ge.init_dfalt_sprite_data()
+    ge.init_defalt_particle_data()
     ge.init_all_tile_data()
+    ge.init_all_entity_data()
     ge.init_camera()
     ge.init_box_2d()
     ge.init_gui()
@@ -29,9 +33,12 @@ init_startup::proc(){
     ge.init_maskes()
 
     ge.camera.target = {0,0}
+
 }
 main :: proc() {
+    
     init_startup()
+
 
     // temptmap := ge.lode_t_map_from_bi(as.all_tile_maps[as.tile_map_names.pos_0_0].data)
     // ge.init_t_map(&temptmap)
@@ -66,8 +73,13 @@ main :: proc() {
         if !ge.editer_mode{
             if ge.key.m_left_d {
                 for i in 0..=1 {
-                particle :ge.Particle = ge.gen_p_confetti(rl.GetScreenToWorld2D(rl.GetMousePosition(), ge.camera))
-                particle.texture_name = as.texture_names.burning_loop_1
+                particle :ge.particle = {
+                    xy=rl.GetScreenToWorld2D(rl.GetMousePosition(), ge.camera),
+                    life=10,
+                    max_life=10,
+                    id=ge.particle_id.test,
+                    
+                }
                 ge.spawn_particle(particle)
                 //rl.PlaySound(as.sounds[as.sound_names.s_paper_swipe])
                 }
@@ -81,7 +93,6 @@ main :: proc() {
         if rl.IsKeyDown(.SPACE){
            ge.unlode_t_map(&ge.Curent_world_map.t_maps[{0,0}])
         }
-
         ge.do_bg()
         ge.do_mg()
         ge.draw_all_particle()
@@ -92,6 +103,9 @@ main :: proc() {
         rl.EndMode2D()
         ge.do_ui()
         rl.EndDrawing()
+        
+
+
 
     }
     ge.free_memery()

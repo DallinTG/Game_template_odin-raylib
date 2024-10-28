@@ -8,13 +8,17 @@ import "core:math"
 gui_grab_h :f32 : 25
 pading:f32:4
 
+scale_ui::proc(imput:$T)->(output:T){
+    return imput*settings_game.video.ui_scale
+}
+
 init_gui :: proc (){
     
 }
 draw_ui_mask::proc(){ 
     // cord := this_frame_camera_target
     cord :[2]f32= {0,0}
-    rl.DrawTexturePro(ui_mask.texture,{0,0,cast(f32)ui_mask.texture.width,cast(f32)ui_mask.texture.height * -1},{cord.x, cord.y, cast(f32)ui_mask.texture.width / camera.zoom,cast(f32)ui_mask.texture.height / camera.zoom},{0,0},0,rl.WHITE)
+    rl.DrawTexturePro(ui_mask.texture,{0,0,cast(f32)ui_mask.texture.width,cast(f32)ui_mask.texture.height * -1},{cord.x, cord.y, cast(f32)ui_mask.texture.width,cast(f32)ui_mask.texture.height},{0,0},0,rl.WHITE)
 }
 draw_and_calculate_ui::proc(){
     rl.BeginTextureMode(ui_mask)
@@ -88,7 +92,8 @@ render_gui_textur_icons::proc(shrink_l_x:f32,shrink_u_y:f32,shrink_r_x:f32,shrin
         button.pos_offset ={ cast(f32)(page_index % slot_by_x)*(editer_icon_size+editer_icon_pading)+pos_x, cast(f32)(page_index / slot_by_x)*(editer_icon_size+editer_icon_pading)+pos_y}
         if index > ((slot_by_x * slot_by_y)*(editor_curent_page-1)-1)&&index < ((slot_by_x * slot_by_y)*(editor_curent_page)){
             button_c :bool
-            if render_gui_button_textur(&editor_panel,&button,all_tile_data[new_tile_id].bace_t_name) {button_c = true} 
+            // fmt.print(len(all_tile_data[new_tile_id].bace_texture_name),"\n")
+            if render_gui_button_textur(&editor_panel,&button,all_tile_data[new_tile_id].bace_texture_name[0],color=all_tile_data[new_tile_id].color) {button_c = true} 
             if button_c{
                 curent_brush_t = new_tile_id
                 
@@ -166,8 +171,8 @@ render_gui_button :: proc(gui_panel:^gui_panel,gui_button:^gui_button)->(button_
     return rl.GuiButton({gui_panel.pos.x+gui_button.pos_offset.x,gui_panel.pos.y+gui_button.pos_offset.y,gui_button.w_h.x,gui_button.w_h.y},gui_button.name)
 }
 // --- wil make the textur 1 px smaller on all sideds to let the huvering hyligt show throu
-render_gui_button_textur :: proc(gui_panel:^gui_panel,gui_button:^gui_button,t_name:as.texture_names)->(button_prssed:bool){
+render_gui_button_textur :: proc(gui_panel:^gui_panel,gui_button:^gui_button,t_name:as.texture_names,color:rl.Color={255,255,255,255})->(button_prssed:bool){
     clicked:= rl.GuiButton({gui_panel.pos.x+gui_button.pos_offset.x,gui_panel.pos.y+gui_button.pos_offset.y,gui_button.w_h.x,gui_button.w_h.y},gui_button.name)
-    draw_texture(t_name,{gui_panel.pos.x+gui_button.pos_offset.x+1,gui_panel.pos.y+gui_button.pos_offset.y+1,gui_button.w_h.x-2,gui_button.w_h.y-2})
+    draw_texture(t_name,{gui_panel.pos.x+gui_button.pos_offset.x+1,gui_panel.pos.y+gui_button.pos_offset.y+1,gui_button.w_h.x-2,gui_button.w_h.y-2},color=color)
     return clicked
 }

@@ -25,6 +25,7 @@ get_time_util::proc(){
     seconds_1_8 = false
     seconds_1_16 = false
 
+
     if time_q > 0.0625{
         time_q=time_q - 0.0625
         seconds_1_16 = true
@@ -47,12 +48,18 @@ get_time_util::proc(){
             }
         }
     }
+
+    create_simp_cube_entity({0,0},{32,32})
+    // fmt.print(len(sprite_rendering_q),"\n")
+    create_entity_by_id({0,0},entity_id.test)
+    
 }
 
 every_1_s::proc(){
     // fmt.print(rl.GetTime()," one second has elapsed \n")
     create_simp_cube_entity({0,0},{32,32})
     // fmt.print(len(sprite_rendering_q),"\n")
+    create_entity_by_id({0,0},entity_id.test)
 }
 every_1_2_s::proc(){
     // fmt.print(rl.GetTime()," one second has elapsed \n")

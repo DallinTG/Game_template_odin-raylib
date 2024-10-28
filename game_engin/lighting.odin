@@ -7,7 +7,7 @@ import "core:sort"
 import "core:slice"
 import as "../assets"
 import rl "vendor:raylib"
-
+test:f32:7
 bace_light:rl.Color= {0,0,0,0}
 bace_dark:rl.Color= {0,0,20,200}
 light::struct{
@@ -54,8 +54,6 @@ render_bloom_q::proc(){
 }
 
 do_lightting::proc(){
-    // maintane_masks()
-    //fmt.print("\n\n",light_rendering_q,"\n\n")
     rl.BeginTextureMode(light_mask)
     rl.BeginBlendMode(rl.BlendMode.ALPHA_PREMULTIPLY)  
     render_light_q()
@@ -68,7 +66,7 @@ do_lightting::proc(){
 }
 do_bloom::proc(){
     rl.BeginTextureMode(bloom_mask)
-    rl.BeginBlendMode(rl.BlendMode.ALPHA_PREMULTIPLY)  
+    rl.BeginBlendMode(rl.BlendMode.ADDITIVE)  
     render_bloom_q()
     draw_all_particles_bloom()
     rl.EndBlendMode()
@@ -99,6 +97,18 @@ draw_bloom_mask::proc(){
     cord := this_frame_camera_target
     rl.DrawTexturePro(bloom_mask.texture,{0,0,cast(f32)bloom_mask.texture.width,cast(f32)bloom_mask.texture.height * -1},{cord.x, cord.y, cast(f32)bloom_mask.texture.width / camera.zoom,cast(f32)bloom_mask.texture.height / camera.zoom},{0,0},0,rl.WHITE)
     rl.EndBlendMode()
+    // rl.EndShaderMode()
+}
+
+draw_particle_mask::proc(){
+
+    // rl.SetShaderValueTexture(as.shader_test,rl.GetShaderLocation(as.shader_test, "lights"), bloom_mask.texture)
+    // rl.SetShaderValueTexture(as.shader_test,rl.GetShaderLocation(as.shader_test, "darknes"), dark_mask.texture)
+    // rl.BeginShaderMode(as.shader_test)
+    // rl.BeginBlendMode(rl.BlendMode.ADDITIVE)  
+    cord := this_frame_camera_target
+    rl.DrawTexturePro(particle_mask.texture,{0,0,cast(f32)particle_mask.texture.width,cast(f32)particle_mask.texture.height * -1},{cord.x, cord.y, cast(f32)particle_mask.texture.width / camera.zoom,cast(f32)particle_mask.texture.height / camera.zoom},{0,0},0,rl.WHITE)
+    // rl.EndBlendMode()
     // rl.EndShaderMode()
 }
 

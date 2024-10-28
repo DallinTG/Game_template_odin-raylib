@@ -1,13 +1,18 @@
 package game_engin
+
 import rl "vendor:raylib"
+import rlgl "vendor:raylib/rlgl"
 import as "../assets"
 import "core:fmt"
 import "core:math"
+import rand "core:math/rand"
 import "core:encoding/cbor"
 import "core:os"
 import "core:strings"
 import "core:strconv"
 import b2 "vendor:box2d"
+import ogl "vendor:OpenGL"
+
 
 t_map_width:: 32
 t_map_height:: 32
@@ -19,7 +24,7 @@ editer_mode := false
 render_edit_bg:=true
 render_edit_mg:=true
 render_edit_fg:=true
-render_edit_debug:=true
+render_edit_debug:=false
 draw_hb_mode := true
 
 curent_brush_t:tile_id
@@ -220,91 +225,171 @@ redraw_t_map::proc(t_map: ^tile_map,){
 redraw_3x3_tmap_layer::proc(t_map: ^tile_map,pos:[2]i32,tile_layer:tile_layer_id){
     xy:[2]i32
     g_xy:[2]i32
+    q_xy:[2]i32
+
     g_xy=get_g_xy_t_maps(t_map,pos)+{0,0}
     xy=get_xy_frome_g_xy_tmap(g_xy)
-    if t_map.tiles[pos.x][pos.y].tile_layer[tile_layer] == tile_id.none{ rl.BeginBlendMode(.SUBTRACT_COLORS) } 
-    rl.BeginTextureMode(Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tile_layer_texture[tile_layer])
-    draw_tile(&Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)],cast(i32)xy.x,cast(i32)xy.y,Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tiles[xy.x][xy.y].tile_layer[tile_layer],tile_layer)
-    rl.EndTextureMode()
-    if t_map.tiles[pos.x][pos.y].tile_layer[tile_layer] == tile_id.none{ rl.EndBlendMode() } 
+    q_xy=get_q_frome_g_xy(g_xy)
 
-//new working code
+    rl.BeginTextureMode(Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tile_layer_texture[tile_layer])
+    rlgl.SetBlendFactors(1,0,1)
+    rl.BeginBlendMode(.CUSTOM)
+    draw_tile(&Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)],cast(i32)xy.x,cast(i32)xy.y,Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tiles[xy.x][xy.y].tile_layer[tile_layer],tile_layer)
+    rl.EndBlendMode()
+
     for x in -1..<2 {
         for y in -1..<2 {
             g_xy=get_g_xy_t_maps(t_map,pos)+{cast(i32)x,cast(i32)y}
             xy=get_xy_frome_g_xy_tmap(g_xy)
-            rl.BeginTextureMode(Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tile_layer_texture[tile_layer])
-            draw_tile(&Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)],cast(i32)xy.x,cast(i32)xy.y,Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tiles[xy.x][xy.y].tile_layer[tile_layer],tile_layer)
-            rl.EndTextureMode()
+            if q_xy != get_q_frome_g_xy(g_xy){
+                rl.EndTextureMode()
+                q_xy=get_q_frome_g_xy(g_xy)
+                rl.BeginTextureMode(Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tile_layer_texture[tile_layer])
+                draw_tile(&Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)],cast(i32)xy.x,cast(i32)xy.y,Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tiles[xy.x][xy.y].tile_layer[tile_layer],tile_layer)
+            }else{
+                q_xy=get_q_frome_g_xy(g_xy)
+                draw_tile(&Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)],cast(i32)xy.x,cast(i32)xy.y,Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tiles[xy.x][xy.y].tile_layer[tile_layer],tile_layer)
+            }
         }
     }
-
-    // g_xy=get_g_xy_t_maps(t_map,pos)+{1,0}
-    // xy=get_xy_frome_g_xy_tmap(g_xy)
-    // rl.BeginTextureMode(Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tile_layer_texture[tile_layer])
-    // draw_tile(&Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)],cast(i32)xy.x,cast(i32)xy.y,Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tiles[xy.x][xy.y].tile_layer[tile_layer],tile_layer)
-    // rl.EndTextureMode()
-    // g_xy=get_g_xy_t_maps(t_map,pos)+{-1,0}
-    // xy=get_xy_frome_g_xy_tmap(g_xy)
-    // rl.BeginTextureMode(Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tile_layer_texture[tile_layer])
-    // draw_tile(&Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)],cast(i32)xy.x,cast(i32)xy.y,Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tiles[xy.x][xy.y].tile_layer[tile_layer],tile_layer)
-    // rl.EndTextureMode()
-    // g_xy=get_g_xy_t_maps(t_map,pos)+{0,1}
-    // xy=get_xy_frome_g_xy_tmap(g_xy)
-    // rl.BeginTextureMode(Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tile_layer_texture[tile_layer])
-    // draw_tile(&Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)],cast(i32)xy.x,cast(i32)xy.y,Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tiles[xy.x][xy.y].tile_layer[tile_layer],tile_layer)
-    // rl.EndTextureMode()
-    // g_xy=get_g_xy_t_maps(t_map,pos)+{0,-1}
-    // xy=get_xy_frome_g_xy_tmap(g_xy)
-    // rl.BeginTextureMode(Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tile_layer_texture[tile_layer])
-    // draw_tile(&Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)],cast(i32)xy.x,cast(i32)xy.y,Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tiles[xy.x][xy.y].tile_layer[tile_layer],tile_layer)
-    // rl.EndTextureMode()
-    // g_xy=get_g_xy_t_maps(t_map,pos)+{1,-1}
-    // xy=get_xy_frome_g_xy_tmap(g_xy)
-    // rl.BeginTextureMode(Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tile_layer_texture[tile_layer])
-    // draw_tile(&Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)],cast(i32)xy.x,cast(i32)xy.y,Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tiles[xy.x][xy.y].tile_layer[tile_layer],tile_layer)
-    // rl.EndTextureMode()
-    // g_xy=get_g_xy_t_maps(t_map,pos)+{-1,-1}
-    // xy=get_xy_frome_g_xy_tmap(g_xy)
-    // rl.BeginTextureMode(Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tile_layer_texture[tile_layer])
-    // draw_tile(&Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)],cast(i32)xy.x,cast(i32)xy.y,Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tiles[xy.x][xy.y].tile_layer[tile_layer],tile_layer)
-    // rl.EndTextureMode()
-    // g_xy=get_g_xy_t_maps(t_map,pos)+{1,1}
-    // xy=get_xy_frome_g_xy_tmap(g_xy)
-    // rl.BeginTextureMode(Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tile_layer_texture[tile_layer])
-    // draw_tile(&Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)],cast(i32)xy.x,cast(i32)xy.y,Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tiles[xy.x][xy.y].tile_layer[tile_layer],tile_layer)
-    // rl.EndTextureMode()
-    // g_xy=get_g_xy_t_maps(t_map,pos)+{-1,1}
-    // xy=get_xy_frome_g_xy_tmap(g_xy)
-    // rl.BeginTextureMode(Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tile_layer_texture[tile_layer])
-    // draw_tile(&Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)],cast(i32)xy.x,cast(i32)xy.y,Curent_world_map.t_maps[get_q_frome_g_xy(g_xy)].tiles[xy.x][xy.y].tile_layer[tile_layer],tile_layer)
-    // rl.EndTextureMode()
+    rl.EndTextureMode()
 }
 
 draw_tile::proc(t_map:^tile_map,x:i32,y:i32,tile_id:tile_id,tile_layer:tile_layer_id){
-
-    switch tile_i in all_tile_data[tile_id].tile_type {
+    if t_map != nil{
+    switch tile_data_type in all_tile_data[tile_id].tile_type {
         case tt_bace:
-            draw_texture(all_tile_data[tile_id].bace_t_name ,{cast(f32)(x * t_map_t_size),cast(f32)(y * t_map_t_size), t_map_t_size, t_map_t_size})
+            //draw bace textur
+            rand.reset(cast(u64)abs(x*y+x+y+t_map.pos.x+t_map.pos.y)+1)
+            draw_texture(rand.choice(all_tile_data[tile_id].bace_texture_name[:]) ,{cast(f32)(x * t_map_t_size),cast(f32)(y * t_map_t_size), t_map_t_size, t_map_t_size},color = all_tile_data[tile_id].color)
         case tt_wall_s:
-            draw_texture(all_tile_data[tile_id].bace_t_name ,{cast(f32)(x * t_map_t_size),cast(f32)(y * t_map_t_size), t_map_t_size, t_map_t_size})
+            //draw bace textur
+            rand.reset(cast(u64)abs(x*y+x+y+t_map.pos.x+t_map.pos.y)+1)
+
+            draw_texture(rand.choice(all_tile_data[tile_id].bace_texture_name[:]) ,{cast(f32)(x * t_map_t_size),cast(f32)(y * t_map_t_size), t_map_t_size, t_map_t_size},color = all_tile_data[tile_id].color)
+            // draw top side
             ofset :[2]i32= {0,-1}
             if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] != tile_id{
-                draw_texture(all_tile_data[tile_id].overlay_self_t_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 0 ,origin = {t_map_t_size/2,t_map_t_size/2})
+                draw_texture(tile_data_type.side_texture_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 0 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
             }
-            ofset= {0,1}
-            if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] != tile_id{
-                draw_texture(all_tile_data[tile_id].overlay_self_t_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 180 ,origin = {t_map_t_size/2,t_map_t_size/2})
-            }
+            //draw left side
             ofset= {-1,0}
             if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] != tile_id{
-                draw_texture(all_tile_data[tile_id].overlay_self_t_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 270 ,origin = {t_map_t_size/2,t_map_t_size/2})
+                draw_texture(tile_data_type.side_texture_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 270 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+                //draw top left corn
+                ofset = {0,-1}
+                if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] != tile_id{
+                    draw_texture(tile_data_type.outer_corner_texture_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 0 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+                }
+            }else{
+                //draw top left iner corn
+                ofset = {-1,-1}
+                if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] != tile_id{
+                    ofset :[2]i32= {0,-1}
+                    if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] == tile_id{
+                        draw_texture(tile_data_type.inner_corner_texture_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 0 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+                    }
+                }
             }
+            //draw bot side
+            ofset= {0,1}
+            if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] != tile_id{
+                draw_texture(tile_data_type.side_texture_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 180 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+                // draw bot left corn
+                ofset= {-1,0}
+                if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] != tile_id{
+                    draw_texture(tile_data_type.outer_corner_texture_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 270 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+                }
+            }else{
+                //draw bot left iner corn
+                ofset = {-1,1}
+                if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] != tile_id{
+                    ofset :[2]i32= {-1,0}
+                    if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] == tile_id{
+                        draw_texture(tile_data_type.inner_corner_texture_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 270 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+                    }
+                }
+            }
+            // draw right side
             ofset= {1,0}
             if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] != tile_id{
-                draw_texture(all_tile_data[tile_id].overlay_self_t_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 90 ,origin = {t_map_t_size/2,t_map_t_size/2})
+                draw_texture(tile_data_type.side_texture_name,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 90 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+                //draw bot right corn
+                ofset= {0,1}
+                if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] != tile_id{
+                    draw_texture(tile_data_type.outer_corner_texture_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 180 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+                }
+                //draw top right corn
+                ofset = {0,-1}
+                if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] != tile_id{
+                    draw_texture(tile_data_type.outer_corner_texture_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 90 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+                }
+            }else{
+                //draw bot right iner corn
+                ofset = {1,1}
+                if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] != tile_id{
+                    ofset= {0,1}
+                    if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] == tile_id{
+                        draw_texture(tile_data_type.inner_corner_texture_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 180 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+                    }
+                }
+                //draw top right iner corn
+                ofset = {1,-1}
+                if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] != tile_id{
+                    ofset = {0,-1}
+                    if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] == tile_id{
+                        draw_texture(tile_data_type.inner_corner_texture_name ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 90 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+                    }
+                }
+            
             }
         case tt_pipe:
+            // draw top 
+            up:bool
+            right:bool
+            bot:bool
+            left:bool
+
+            //draw up
+            ofset :[2]i32= {0,-1}
+            if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] == tile_id{
+                draw_texture(rand.choice(all_tile_data[tile_id].bace_texture_name[:]) ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size},color = all_tile_data[tile_id].color,rotation= 0 ,origin = {t_map_t_size/2,t_map_t_size/2})
+                up=true
+            }
+            //draw doun
+            ofset = {0,1}
+            if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] == tile_id{
+                draw_texture(rand.choice(all_tile_data[tile_id].bace_texture_name[:]) ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size},color = all_tile_data[tile_id].color,rotation= 180 ,origin = {t_map_t_size/2,t_map_t_size/2},w_s = -1)
+                bot=true
+            }
+            //draw right
+            ofset = {1,0}
+            if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] == tile_id{
+                draw_texture(rand.choice(all_tile_data[tile_id].bace_texture_name[:]) ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size},color = all_tile_data[tile_id].color,rotation= 90 ,origin = {t_map_t_size/2,t_map_t_size/2})
+                right=true
+            }
+            //draw left
+            ofset = {-1,0}
+            if get_tile_frome_g_xy(get_g_xy_t_maps(t_map,{x,y},ofset)).tile_layer[tile_layer] == tile_id{
+                draw_texture(rand.choice(all_tile_data[tile_id].bace_texture_name[:]) ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size},color = all_tile_data[tile_id].color,rotation= 270 ,origin = {t_map_t_size/2,t_map_t_size/2},w_s=-1)
+                left=true
+            }
+            //draw L up/right
+            if up && right && !bot && !left {
+                draw_texture(tile_data_type.pipe_L_r ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 0 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+            }
+           //draw L right/bot
+            if !up && right && bot && !left {
+                draw_texture(tile_data_type.pipe_L_r ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 90 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+            }
+            //draw L bot/left
+            if !up && !right && bot && left {
+                draw_texture(tile_data_type.pipe_L_r ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 0 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color,w_s=-1,h_s=-1)
+            }
+            //draw L left/up
+            if up && !right && !bot && left {
+                draw_texture(tile_data_type.pipe_L_l ,{cast(f32)(x * t_map_t_size)+(t_map_t_size/2),cast(f32)(y * t_map_t_size)+(t_map_t_size/2), t_map_t_size, t_map_t_size , },rotation= 0 ,origin = {t_map_t_size/2,t_map_t_size/2},color = all_tile_data[tile_id].color)
+            }
 
         case tt_mix:
 
@@ -314,6 +399,7 @@ draw_tile::proc(t_map:^tile_map,x:i32,y:i32,tile_id:tile_id,tile_layer:tile_laye
             // Default case
             // In this case, it is `nil`
         }
+    }
 }
 
 get_g_xy_t_maps::proc(t_map:^tile_map,pos:[2]i32,ofset:[2]i32={0,0})->(g_xy:[2]i32){
@@ -334,7 +420,7 @@ get_xy_frome_g_xy_tmap::proc(pos:[2]i32)->(xy:[2]i32){
     }
     return {x ,y}
 }
-get_q_frome_g_xy::proc(pos:[2]i32)->(q_pos:[2]i32){
+get_q_frome_g_xy::proc(pos:[2]i32)->(q_pos:[2]i32,){
     q_pos.x = pos.x/t_map_width
     q_pos.y = pos.y/t_map_height
     if pos.x <0{
@@ -419,7 +505,6 @@ draw_on_world_map :: proc(world_map: ^World_map){
                 set_t_in_t_map(&world_map.t_maps[{cast(i32)t_map_pos_x,cast(i32)t_map_pos_y}],tp,curent_brush_t,tile_layer_id.bg)
                 redraw_3x3_tmap_layer(&world_map.t_maps[{cast(i32)t_map_pos_x,cast(i32)t_map_pos_y}],{cast(i32)d_t_pos.x,cast(i32)d_t_pos.y},tile_layer_id.bg)
                 // redraw_t_map_layer(&world_map.t_maps[{cast(i32)t_map_pos_x,cast(i32)t_map_pos_y}],tile_layer_id.bg)
-
             }
             if render_edit_mg{
                 set_t_in_t_map(&world_map.t_maps[{cast(i32)t_map_pos_x,cast(i32)t_map_pos_y}],tp,curent_brush_t,tile_layer_id.mg)
@@ -487,6 +572,9 @@ tile_id::enum{
     dirt,
     stone_brick,
     smooth_stone_brick,
+    smooth_stone_brick_red,
+    smooth_stone_brick_green,
+    pipe,
 }
 tile_type::union{
     tt_bace,
@@ -499,10 +587,16 @@ tt_bace::struct{
 
 }
 tt_wall_s::struct{
-    
+    side_texture_name:as.texture_names,
+    inner_corner_texture_name:as.texture_names,
+    outer_corner_texture_name:as.texture_names,
 }
 tt_pipe::struct{
-
+    pipe_L_r:as.texture_names,
+    pipe_L_l:as.texture_names,
+    pipe_T:as.texture_names,
+    pipe_X:as.texture_names,
+    pipe_end:as.texture_names,
 }
 tt_mix::struct{
 
@@ -518,30 +612,81 @@ tt_spill::struct{
 //     spill,
 // }
 tile_data::struct{
-    bace_t_name:as.texture_names,
-    overlay_self_t_name:as.texture_names,
-    overlay_other_t_name:as.texture_names,
+    bace_texture_name:[dynamic]as.texture_names,
+    color:rl.Color,
     tile_type:tile_type,
-
 }
 
 init_all_tile_data::proc(){
+    // append(&all_tile_data[tile_id.none].bace_texture_name,as.texture_names.none)
+    for id in tile_id{
+        resize(&all_tile_data[id].bace_texture_name,3)
+    }
+    // fmt.print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n",rand.choice(),"\n")
     all_tile_data[tile_id.none]={
-        bace_t_name=as.texture_names.none,
+        bace_texture_name ={ as.texture_names.none},
+        color = {255,255,255,255},
         tile_type=tt_bace{},
     }
     all_tile_data[tile_id.hb]={
-        bace_t_name=as.texture_names.debug_hb,
+        bace_texture_name = {as.texture_names.debug_hb},
+        color = {255,255,255,255},
         tile_type=tt_bace{},
     }
     all_tile_data[tile_id.stone_brick]={
-        bace_t_name=as.texture_names.stone_brick,
+        bace_texture_name = {as.texture_names.stone_brick},
+        color = {255,255,255,255},
         tile_type=tt_bace{},
     }
     all_tile_data[tile_id.smooth_stone_brick]={
-        bace_t_name = as.texture_names.smooth_stone_brick,
-        overlay_self_t_name = as.texture_names.smooth_stone_brick_side,
-        tile_type = tt_wall_s{}
+        bace_texture_name = {as.texture_names.smooth_stone_brick},
+        color = {255,255,255,255},
+        tile_type = tt_wall_s{
+            side_texture_name = as.texture_names.smooth_stone_brick_side,
+            inner_corner_texture_name = as.texture_names.smooth_stone_brick_corner,
+            outer_corner_texture_name = as.texture_names.smooth_stone_brick_corner,
+        },
+    }
+    all_tile_data[tile_id.smooth_stone_brick_red]={
+        bace_texture_name = {as.texture_names.smooth_stone_brick},
+        color = {200,34,100,255},
+        tile_type = tt_wall_s{
+            side_texture_name = as.texture_names.smooth_stone_brick_side,
+            inner_corner_texture_name = as.texture_names.smooth_stone_brick_corner,
+            outer_corner_texture_name = as.texture_names.smooth_stone_brick_corner,
+        },
+    }
+    all_tile_data[tile_id.smooth_stone_brick_green]={
+        bace_texture_name = {as.texture_names.smooth_stone_brick},
+        color = {0,255,55,255},
+        tile_type = tt_wall_s{
+            side_texture_name = as.texture_names.smooth_stone_brick_side,
+            inner_corner_texture_name = as.texture_names.smooth_stone_brick_corner,
+            outer_corner_texture_name = as.texture_names.smooth_stone_brick_corner,
+        },
+    }
+    all_tile_data[tile_id.test]={
+        bace_texture_name = {as.texture_names.space,as.texture_names.space_2,as.texture_names.space_3},
+        color = {0,255,55,255},
+        tile_type = tt_wall_s{
+            side_texture_name = as.texture_names.smooth_stone_brick_side,
+            inner_corner_texture_name = as.texture_names.smooth_stone_brick_corner,
+            outer_corner_texture_name = as.texture_names.smooth_stone_brick_corner,
+        },
+    }
+    all_tile_data[tile_id.test]={
+        bace_texture_name = {as.texture_names.sand_32_v1,as.texture_names.sand_32_v2},
+        color = {255,255,255,255},
+        tile_type = tt_bace{}
+    }
+    all_tile_data[tile_id.pipe]={
+        bace_texture_name = {as.texture_names.pipe_bace},
+        color = {255,255,255,255},
+        tile_type = tt_pipe{
+            pipe_L_l = as.texture_names.pipe_l_l,
+            pipe_L_r = as.texture_names.pipe_l_r,
+            
+        }
     }
 
     curent_brush_t = tile_id.none
