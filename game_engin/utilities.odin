@@ -48,18 +48,12 @@ get_time_util::proc(){
             }
         }
     }
-
-    create_simp_cube_entity({0,0},{32,32})
-    // fmt.print(len(sprite_rendering_q),"\n")
-    create_entity_by_id({0,0},entity_id.test)
     
 }
 
 every_1_s::proc(){
     // fmt.print(rl.GetTime()," one second has elapsed \n")
-    create_simp_cube_entity({0,0},{32,32})
-    // fmt.print(len(sprite_rendering_q),"\n")
-    create_entity_by_id({0,0},entity_id.test)
+    create_entity_by_id({0,0},entity_id.test,sprite_id.invalid,light_id.defalt)
 }
 every_1_2_s::proc(){
     // fmt.print(rl.GetTime()," one second has elapsed \n")
@@ -73,7 +67,7 @@ every_1_8_s::proc(){
 every_1_16_s::proc(){
     // create_simp_cube_entity({0,0},{32,32})
 
-
+    create_entity_by_id({0,0},entity_id.test,sprite_id.invalid,light_id.defalt)
     // fmt.print(rl.GetTime()," one second has elapsed \n")
     // sound:=rl.LoadSoundAlias(as.sounds[as.sound_names.eat])
     // rl.SetSoundPan(sound, 4)

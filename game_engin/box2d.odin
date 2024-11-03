@@ -29,6 +29,9 @@ init_box_2d::proc(){
 }
 sim_box_2d::proc(){
     b2.World_Step(box_2d_world_id, rl.GetFrameTime()*time_step, sub_step_count)
+
+    // fmt.print(rl.GetFrameTime()*time_step,"time step\n")
+    // fmt.print(rl.GetFrameTime(),"frame time\n")
 }
 cleanup_box_2d::proc(){
     b2.DestroyWorld(box_2d_world_id)

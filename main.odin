@@ -12,18 +12,21 @@ import "core:math"
 
 init_startup::proc(){
     rl.SetConfigFlags({.WINDOW_RESIZABLE})
+    // rl.SetConfigFlags({.WINDOW_ALWAYS_RUN})
+    // rl.ConfigFlags(rl.FLAG_WINDOW_ALWAYS_RUN)
     // rl.SetTargetFPS(ge.framerate)
-    // rl.SetTargetFPS(60)
+    // rl.SetTargetFPS(120)
     ge.init_memery()
     ge.init_threads()
     rl.InitWindow(800, 800, "test")
     rl.InitAudioDevice()
     rl.SetExitKey(.KEY_NULL)
     ge.init_settings()
-    ge.init_dfalt_sprite_data()
+    ge.init_defalt_light_data()
+    ge.init_defalt_sprite_data()
     ge.init_defalt_particle_data()
     ge.init_all_tile_data()
-    ge.init_all_entity_data()
+    ge.init_defalt_entity_data()
     ge.init_camera()
     ge.init_box_2d()
     ge.init_gui()
@@ -47,24 +50,21 @@ main :: proc() {
     // ge.init_t_map(&temptmap)
     // ge.add_t_map_to_world_map(&temptmap, &ge.Curent_world_map)
 
-
-    
-    // ge.create_simp_cube_entity({10,10})
-    // ge.create_simp_cube_entity({10,10})
     for (!ge.window_should_close) 
     {
         ge.window_should_close = rl.WindowShouldClose()
         ge.manage_key_data()
         ge.maintane_masks()
         ge.draw_and_calculate_ui()
+        ge.get_time_util()
         if !ge.game_paused{
             ge.do_entitys()
             ge.calculate_particles()
-            ge.do_lightting()
+            // ge.do_lightting()
+            ge.do_all_lights()
             ge.sim_box_2d()
             // ge.pool_join_my_threds()
         }
-        ge.get_time_util()
         ge.manage_sound_bytes()
         rl.BeginDrawing()
         rl.ClearBackground(rl.RAYWHITE)
@@ -95,21 +95,13 @@ main :: proc() {
         }
         ge.do_bg()
         ge.do_mg()
-        ge.draw_all_particle()
-        ge.draw_lighting_mask()
-        ge.draw_bloom_mask()
         ge.do_fg()
         ge.do_debug()
         rl.EndMode2D()
         ge.do_ui()
         rl.EndDrawing()
-        
-
-
-
     }
     ge.free_memery()
     rl.CloseAudioDevice()
     rl.CloseWindow()
- 
 }

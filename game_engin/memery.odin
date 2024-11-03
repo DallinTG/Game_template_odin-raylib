@@ -9,8 +9,8 @@ init_memery::proc(){
 }
 free_memery::proc(){
     //free(all_particles)
-    delete(light_rendering_q)
-    delete(temp_light_buffer)
+    // delete(light_rendering_q)
+    // delete(temp_light_buffer)
     delete(light_buffer)
     free(all_particles)
     delete(as.atlases)
