@@ -7,7 +7,7 @@ import "core:math"
 // import "core:math/rand"
 import b2 "vendor:box2d"
 
-max_entity_c::2000
+max_entity_c::4000
 stats :: struct{
     speed:f32
 }
@@ -24,6 +24,7 @@ entity_bucket::struct{
     data:[max_entity_c]entity_data,
     next_open_slot:int,
     last_entity:int,
+    count:int,
 }
 entity_data::struct{
     entity:entity,
@@ -83,14 +84,14 @@ init_defalt_entity_data::proc(){
     }
 }
 
+// do_entitys::proc(){
+//     do_entitys_d()
+// }
+// loops all entitys then will do logic
 do_entitys::proc(){
-    do_entitys_d()
-}
-
-do_entitys_d::proc(){
-// if all_entitys.last_entity != 0 && all_entitys.next_open_slot != 0{
-    for &entity_data,i in all_entitys.data[:all_entitys.last_entity]{
-
+if all_entitys.count > 0 {
+    for &entity_data,i in all_entitys.data[:all_entitys.last_entity+1]{
+        if entity_data.is_occupied {
         pos :b2.Vec2= b2.Body_GetWorldPoint(entity_data.entity.body_id,{all_sprites.data[entity_data.entity.sprite_id.id].sprite.rec.x,all_sprites.data[entity_data.entity.sprite_id.id].sprite.rec.y})
         pos_center := b2.Body_GetPosition(entity_data.entity.body_id)
         radians :f32= b2.Rot_GetAngle(b2.Body_GetRotation(entity_data.entity.body_id))
@@ -119,16 +120,17 @@ do_entitys_d::proc(){
                 }
             }
         }
+        }
         // append(&sprite_rendering_q, &entity.data.sprite)       
     }
 }
+}
 // }
 create_entity_by_id::proc(pos:[2]f32,entity_id:entity_id,sprite_id:sprite_id,light_id:light_id ){
+    if all_entitys.count < max_entity_c {
     n_entity :entity = defalt_entitys[entity_id].entity
-    n_entity.sprite_id = create_sprite(sprite = defalt_sprite_data[sprite_id])
-    n_entity.light_id = create_light(defalt_lights[light_id])
-
-
+    
+    
     body_def : b2.BodyDef = b2.DefaultBodyDef()
     body_def.type = defalt_entitys[entity_id].body.body_type
     body_def.position = {pos.x,pos.y}
@@ -141,40 +143,55 @@ create_entity_by_id::proc(pos:[2]f32,entity_id:entity_id,sprite_id:sprite_id,lig
     n_entity.pos = pos
     n_entity.body_id = b2.CreateBody(box_2d_world_id, body_def)
     n_entity.shape_id = b2.CreatePolygonShape(n_entity.body_id, shape_def, b2.MakeBox(defalt_entitys[entity_id].body.extent.x, defalt_entitys[entity_id].body.extent.y))
-
-    create_entity(n_entity)
+    entity_id := create_entity(n_entity)
+    if entity_id.id > -1 {
+       all_entitys.data[entity_id.id].entity.sprite_id = create_sprite(sprite = defalt_sprite_data[sprite_id])
+       all_entitys.data[entity_id.id].entity.light_id = create_light(defalt_lights[light_id])
+    }
+    }
     // append(&all_entitys, n_entity)
 }
 
 create_entity::proc(entity:entity)->(entity_id:entity_index){
-    all_entitys.data[all_entitys.next_open_slot].entity = entity
-    all_entitys.data[all_entitys.next_open_slot].is_occupied = true
-    all_entitys.data[all_entitys.next_open_slot].gen += 1
-    entity_id = {id = all_entitys.next_open_slot,gen = all_entitys.data[all_entitys.next_open_slot].gen}
-    all_entitys.data[all_entitys.next_open_slot].entity.entity_index = entity_id
-    if all_entitys.next_open_slot != max_entity_c-1{
-        all_entitys.next_open_slot += 1
-        for all_entitys.data[all_entitys.next_open_slot].is_occupied{
-            if all_entitys.next_open_slot != max_entity_c-1{
-                all_entitys.next_open_slot += 1
-            }else { break }
+    if !all_entitys.data[all_entitys.next_open_slot].is_occupied{
+        all_entitys.count +=1
+        all_entitys.data[all_entitys.next_open_slot].entity = entity
+        all_entitys.data[all_entitys.next_open_slot].is_occupied = true
+        // all_entitys.data[all_entitys.next_open_slot].gen += 1
+        entity_id = {id = all_entitys.next_open_slot,gen = all_entitys.data[all_entitys.next_open_slot].gen}
+        all_entitys.data[all_entitys.next_open_slot].entity.entity_index = entity_id
+        if all_entitys.next_open_slot != max_entity_c-1{
+            all_entitys.next_open_slot += 1
+            for all_entitys.data[all_entitys.next_open_slot].is_occupied{
+                if all_entitys.next_open_slot != max_entity_c-1{
+                    all_entitys.next_open_slot += 1
+                }else { break }
+            }
         }
-    }
 
-    if all_entitys.last_entity != max_entity_c-1 {
-        for all_entitys.data[all_entitys.last_entity].is_occupied{
-            if all_entitys.last_entity != max_entity_c-1{
-                all_entitys.last_entity += 1
-            }else{break}
-        }
+        if all_entitys.last_entity != max_entity_c-1 {
+            for all_entitys.data[all_entitys.last_entity].is_occupied{
+                if all_entitys.last_entity != max_entity_c-1{
+                    all_entitys.last_entity += 1
+                }else{break}
+            }
+        }    
+        return entity_id
     }
-
+    entity_id = {-1,-1}
     return entity_id
 }
-
 delete_entity::proc(entity_id:entity_index){
-    if all_entitys.data[entity_id.id].gen == entity_id.gen{
+    
+    if all_entitys.data[entity_id.id].gen == entity_id.gen&& all_entitys.data[entity_id.id].is_occupied{
+        all_entitys.count -=1
         all_entitys.data[entity_id.id].is_occupied=false
+        all_entitys.data[all_entitys.next_open_slot].gen += 1
+        delete_sprite(all_entitys.data[entity_id.id].entity.sprite_id)
+        delete_light(all_entitys.data[entity_id.id].entity.light_id)
+        if b2.Body_IsValid(all_entitys.data[entity_id.id].entity.body_id){
+            b2.DestroyBody(all_entitys.data[entity_id.id].entity.body_id)
+        }
         if entity_id.id < all_entitys.next_open_slot{
             all_entitys.next_open_slot = entity_id.id 
         }

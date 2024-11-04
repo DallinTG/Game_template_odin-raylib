@@ -13,6 +13,7 @@ light_mask:rl.RenderTexture
 dark_mask:rl.RenderTexture 
 bloom_mask:rl.RenderTexture 
 ui_mask:rl.RenderTexture 
+lit_obj_mask:rl.RenderTexture 
 // particle_mask:rl.RenderTexture
 
 screane_Width_old :i32
@@ -34,6 +35,7 @@ init_maskes::proc(){
     dark_mask = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight())
     bloom_mask = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight())
     ui_mask = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight())
+    lit_obj_mask = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight())
     // particle_mask = rl.LoadRenderTexture(rl.GetScreenWidth(), rl.GetScreenHeight())
 
     rl.BeginTextureMode(light_mask)
@@ -52,6 +54,10 @@ init_maskes::proc(){
     rl.ClearBackground({0,0,0,0})
     rl.EndTextureMode()
 
+    rl.BeginTextureMode(lit_obj_mask)
+    rl.ClearBackground({0,0,0,0})
+    rl.EndTextureMode()
+
     // rl.BeginTextureMode(particle_mask)
     // rl.ClearBackground({0,0,0,0})
     // rl.EndTextureMode()
@@ -67,11 +73,13 @@ maintane_masks::proc(){
         rl.UnloadRenderTexture(dark_mask)
         rl.UnloadRenderTexture(bloom_mask)
         rl.UnloadRenderTexture(ui_mask)
+        rl.UnloadRenderTexture(lit_obj_mask)
         // rl.UnloadRenderTexture(particle_mask)
         light_mask = rl.LoadRenderTexture(screen_width, screen_height)
         dark_mask = rl.LoadRenderTexture(screen_width, screen_height)
         bloom_mask = rl.LoadRenderTexture(screen_width, screen_height)
         ui_mask = rl.LoadRenderTexture(screen_width, screen_height)
+        lit_obj_mask = rl.LoadRenderTexture(screen_width, screen_height)
         // particle_mask = rl.LoadRenderTexture(screen_width, screen_height)
         screane_Width_old = screen_width
         screane_height_old = screen_height
@@ -89,6 +97,10 @@ maintane_masks::proc(){
     rl.EndTextureMode()
 
     rl.BeginTextureMode(ui_mask)
+    rl.ClearBackground({0,0,0,0})
+    rl.EndTextureMode()
+
+    rl.BeginTextureMode(lit_obj_mask)
     rl.ClearBackground({0,0,0,0})
     rl.EndTextureMode()
 }
@@ -123,9 +135,7 @@ do_mg :: proc(){
 }
 
 do_fg :: proc(){
-
     draw_world_fg_map()
-    
 }
 
 do_debug::proc(){

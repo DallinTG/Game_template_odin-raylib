@@ -33,6 +33,7 @@ sim_box_2d::proc(){
     // fmt.print(rl.GetFrameTime()*time_step,"time step\n")
     // fmt.print(rl.GetFrameTime(),"frame time\n")
 }
+
 cleanup_box_2d::proc(){
     b2.DestroyWorld(box_2d_world_id)
 }

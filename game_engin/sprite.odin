@@ -6,11 +6,12 @@ import rl "vendor:raylib"
 import "core:slice"
 
 
-max_sprite_c::2000
+max_sprite_c::4000
 sprite_bucket::struct{
     data:[max_sprite_c]sprite_data,
     next_open_slot:int,
     last_sprite:int,
+    count:int,
 }
 sprite::struct {
     z:f32,
@@ -84,39 +85,45 @@ draw_all_sprites::proc(){
 
     clear(&sprite_rendering_q)
 
-    if all_sprites.last_sprite != 0 {
-        for !all_sprites.data[all_sprites.last_sprite].is_occupied{
-            all_sprites.last_sprite -= 1
-        }
-    }
+    // if all_sprites.last_sprite != 0 {
+    //     for !all_sprites.data[all_sprites.last_sprite].is_occupied{
+    //         all_sprites.last_sprite -= 1
+    //     }
+    // }
 }
 
 create_sprite::proc(sprite:sprite)->(sprite_id:sprite_index){
-    all_sprites.data[all_sprites.next_open_slot].sprite = sprite
-    all_sprites.data[all_sprites.next_open_slot].is_occupied = true
-    all_sprites.data[all_sprites.next_open_slot].gen += 1
-    sprite_id = {id = all_sprites.next_open_slot,gen = all_sprites.data[all_sprites.next_open_slot].gen}
-    if all_sprites.next_open_slot != max_sprite_c-1{
-        all_sprites.next_open_slot += 1
-        for all_sprites.data[all_sprites.next_open_slot].is_occupied{
-            if all_sprites.next_open_slot != max_sprite_c-1{
-                all_sprites.next_open_slot += 1
-            }else { break }
+    if !all_sprites.data[all_sprites.next_open_slot].is_occupied{
+        all_sprites.data[all_sprites.next_open_slot].sprite = sprite
+        all_sprites.data[all_sprites.next_open_slot].is_occupied = true
+        all_sprites.count +=1
+        all_sprites.data[all_sprites.next_open_slot].gen += 1
+        sprite_id = {id = all_sprites.next_open_slot,gen = all_sprites.data[all_sprites.next_open_slot].gen}
+        if all_sprites.next_open_slot != max_sprite_c-1{
+            all_sprites.next_open_slot += 1
+            for all_sprites.data[all_sprites.next_open_slot].is_occupied{
+                if all_sprites.next_open_slot != max_sprite_c-1{
+                    all_sprites.next_open_slot += 1
+                }else { break }
+            }
         }
-    }
 
-    if all_sprites.last_sprite != max_sprite_c-1 {
-        for all_sprites.data[all_sprites.last_sprite].is_occupied{
-            if all_sprites.last_sprite != max_sprite_c-1{
-                all_sprites.last_sprite += 1
-            }else{break}
+        if all_sprites.last_sprite != max_sprite_c-1 {
+            for all_sprites.data[all_sprites.last_sprite].is_occupied{
+                if all_sprites.last_sprite != max_sprite_c-1{
+                    all_sprites.last_sprite += 1
+                }else{break}
+            }
         }
+    return sprite_id
     }
+    sprite_id = {-1,-1}
     return sprite_id
 }
 
 delete_sprite::proc(sprite_id:sprite_index){
-    if all_sprites.data[sprite_id.id].gen == sprite_id.gen{
+    if all_sprites.data[sprite_id.id].gen == sprite_id.gen && all_sprites.data[sprite_id.id].is_occupied{
+        all_sprites.count -=1
         all_sprites.data[sprite_id.id].is_occupied=false
         if sprite_id.id < all_sprites.next_open_slot{
             all_sprites.next_open_slot = sprite_id.id 

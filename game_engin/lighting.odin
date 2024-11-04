@@ -15,6 +15,7 @@ light_bucket::struct{
     data:[max_light_c]light_data,
     next_open_slot:int,
     last_light:int,
+    count:int,
 }
 light_data::struct{
     light:light,
@@ -109,38 +110,43 @@ do_all_lights::proc(){
     rl.EndTextureMode()
 
 
-    if all_lights.last_light != 0 {
-        for !all_lights.data[all_lights.last_light].is_occupied{
-            all_lights.last_light -= 1
-        }
-    }
+    // if all_lights.last_light != 0 {
+    //     for !all_lights.data[all_lights.last_light].is_occupied{
+    //         all_lights.last_light -= 1
+    //     }
+    // }
 }
-create_light::proc(light:light)->(light_id:light_index){
-    all_lights.data[all_lights.next_open_slot].light = light
-    all_lights.data[all_lights.next_open_slot].is_occupied = true
-    all_lights.data[all_lights.next_open_slot].gen += 1
-    light_id = {id = all_lights.next_open_slot,gen = all_lights.data[all_lights.next_open_slot].gen}
-    if all_lights.next_open_slot != max_light_c-1{
-        all_lights.next_open_slot += 1
-        for all_lights.data[all_lights.next_open_slot].is_occupied{
-            if all_lights.next_open_slot != max_light_c-1{
-                all_lights.next_open_slot += 1
-            }else { break }
+create_light::proc(light:light)->(light_id:light_index,){
+    if !all_lights.data[all_lights.next_open_slot].is_occupied{
+        all_lights.data[all_lights.next_open_slot].light = light
+        all_lights.count += 1
+        all_lights.data[all_lights.next_open_slot].is_occupied = true
+        all_lights.data[all_lights.next_open_slot].gen += 1
+        light_id = {id = all_lights.next_open_slot,gen = all_lights.data[all_lights.next_open_slot].gen}
+        if all_lights.next_open_slot != max_light_c-1{
+            all_lights.next_open_slot += 1
+            for all_lights.data[all_lights.next_open_slot].is_occupied{
+                if all_lights.next_open_slot != max_light_c-1{
+                    all_lights.next_open_slot += 1
+                }else { break }
+            }
         }
-    }
-
-    if all_lights.last_light != max_light_c-1 {
-        for all_lights.data[all_lights.last_light].is_occupied{
-            if all_lights.last_light != max_light_c-1{
-                all_lights.last_light += 1
-            }else{break}
+        if all_lights.last_light != max_light_c-1 {
+            for all_lights.data[all_lights.last_light].is_occupied{
+                if all_lights.last_light != max_light_c-1{
+                    all_lights.last_light += 1
+                }else{break}
+            }
         }
+        return light_id
     }
+    light_id = {-1,-1}
     return light_id
 }
 delete_light::proc(light_id:light_index){
-    if all_lights.data[light_id.id].gen == light_id.gen{
+    if all_lights.data[light_id.id].gen == light_id.gen&&all_lights.data[light_id.id].is_occupied {
         all_lights.data[light_id.id].is_occupied=false
+        all_lights.count -= 1
         if light_id.id < all_lights.next_open_slot{
             all_lights.next_open_slot = light_id.id 
         }

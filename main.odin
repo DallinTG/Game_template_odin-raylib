@@ -15,7 +15,7 @@ init_startup::proc(){
     // rl.SetConfigFlags({.WINDOW_ALWAYS_RUN})
     // rl.ConfigFlags(rl.FLAG_WINDOW_ALWAYS_RUN)
     // rl.SetTargetFPS(ge.framerate)
-    // rl.SetTargetFPS(120)
+    // rl.SetTargetFPS(12)
     ge.init_memery()
     ge.init_threads()
     rl.InitWindow(800, 800, "test")
@@ -91,8 +91,15 @@ main :: proc() {
             ge.camera.target += delta
         }
         if rl.IsKeyDown(.SPACE){
-           ge.unlode_t_map(&ge.Curent_world_map.t_maps[{0,0}])
+            //ge.unlode_t_map(&ge.Curent_world_map.t_maps[{0,0}])
+            for &entity_data,i in ge.all_entitys.data[:ge.all_entitys.last_entity]{
+               ge.delete_entity(entity_data.entity.entity_index)
+           }
         }
+        fmt.print(ge.all_entitys.count," entity c\n")
+        fmt.print(ge.all_sprites.count," sprite c\n")
+        fmt.print(ge.all_lights.count," lights c\n")
+
         ge.do_bg()
         ge.do_mg()
         ge.do_fg()
