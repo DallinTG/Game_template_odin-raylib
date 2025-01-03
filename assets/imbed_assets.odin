@@ -57,6 +57,8 @@ font_names :: enum {
 }
 
 shader_names :: enum {
+	light_test,
+	light_vs_test,
 	test,
 	vs_test,
 }
@@ -140,8 +142,10 @@ world_map_names :: enum {
 	}
 
 	all_shaders := [shader_names]asset {
+		.light_test = { path = "shaders/light_test.fs", path_hash = 12458457302648426741, info = #load("shaders/light_test.fs",cstring), },
+		.light_vs_test = { path = "shaders/light_vs_test.vs", path_hash = 16884525734150969745, info = #load("shaders/light_vs_test.vs",cstring), },
 		.test = { path = "shaders/test.fs", path_hash = 16528326675515972663, info = #load("shaders/test.fs",cstring), },
-		.vs_test = { path = "shaders/vs_test.vs", path_hash = 17034886045086792897, data = #load("shaders/vs_test.vs"), },
+		.vs_test = { path = "shaders/vs_test.vs", path_hash = 17034886045086792897, info = #load("shaders/vs_test.vs",cstring), },
 	}
 
 	all_sounds := [sound_names]asset {

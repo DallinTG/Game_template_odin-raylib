@@ -48,11 +48,7 @@ get_time_util::proc(){
             }
         }
     }
-    create_entity_by_id({0,0},entity_id.test,sprite_id.invalid,light_id.defalt)
-    create_entity_by_id({0,0},entity_id.test,sprite_id.invalid,light_id.defalt)
-    create_entity_by_id({0,0},entity_id.test,sprite_id.invalid,light_id.defalt)
-    create_entity_by_id({0,0},entity_id.test,sprite_id.invalid,light_id.defalt)
-    create_entity_by_id({0,0},entity_id.test,sprite_id.invalid,light_id.defalt)
+
 
 
 }

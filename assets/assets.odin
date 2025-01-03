@@ -26,7 +26,7 @@ image_info::struct{
     name:texture_names,
     info: cstring,
 }
-textur_info::struct{
+texture_info::struct{
     name:texture_names,
     atlas_index:int,
     frames:int,
@@ -39,10 +39,15 @@ textur_info::struct{
     
 
 }
+texture_lights::struct{
+    bace_light:rl.Texture2D
+}
+lights_textures:texture_lights
 atlases := make([dynamic]rendertextur_info)
-textures :[texture_names]textur_info
+textures :[texture_names]texture_info
 
 shader_test : rl.Shader
+shader_test_light : rl.Shader
 
 sounds:[sound_names]rl.Sound
 init_sounds::proc(){
@@ -52,8 +57,13 @@ init_sounds::proc(){
         }
     }
 }
+init_light_textures::proc(){
+    image := rl.LoadImageFromMemory(".png", & all_raw_textures[.bace_light].data[0], cast(i32)(len( all_raw_textures[.bace_light].data)))
+    lights_textures.bace_light = rl.LoadTextureFromImage(image)
+}
 
 init_texturs::proc(){
+    init_light_textures()
     all_images : [len(texture_names)]image_info
     clear(&atlases)
     assign_at(&atlases, 0, rendertextur_info{ rl.LoadRenderTexture( atlas_size, atlas_size), 0, false})
@@ -78,11 +88,6 @@ init_texturs::proc(){
     atlas_x:i32=0
     atlas_y:i32=0
     for images,i in all_images{
-        //fmt.println(images.image.height)
-        //fmt.println(images.name)
-        //fmt.println(i)
-        // fmt.println(strings.split(cast(string)images.info,","))
-
         texture := rl.LoadTextureFromImage(images.image)
         
         if images.image.width + atlas_x > atlas_size{
@@ -124,15 +129,6 @@ init_texturs::proc(){
                     y_ofset += textures[images.name].frame_hieght
                     x_ofset=0
                 }
-                // fmt.print("  ")
-                // fmt.print(i)
-                // fmt.print("  ")
-                // fmt.print(textures[images.name].name)
-                // fmt.print("  ")
-                // fmt.print(cast(f32)atlas_x)
-                // fmt.print("  ")
-                // fmt.print(cast(f32)atlas_y)
-                // fmt.print("  ")
                 append(&textures[images.name].rectangle,rl.Rectangle{
                     cast(f32)atlas_x + cast(f32)x_ofset,
                     cast(f32)(atlas_y * -1) - cast(f32)y_ofset - cast(f32)images.image.height,
@@ -142,15 +138,6 @@ init_texturs::proc(){
                 x_ofset += textures[images.name].frame_whidth
                 }
             }else{
-                // fmt.print("     ")
-                // fmt.print("waffles4")
-                // fmt.print("     ")
-                // fmt.print(textures[images.name].name)
-                // fmt.print("  ")
-                // fmt.print(cast(f32)atlas_x)
-                // fmt.print("  ")
-                // fmt.print(cast(f32)atlas_y)
-                // fmt.print("  ")
                 append(&textures[images.name].rectangle, rl.Rectangle{
                     cast(f32)atlas_x,
                     cast(f32)(atlas_y * -1)-cast(f32)images.image.height,
@@ -168,6 +155,7 @@ init_texturs::proc(){
 
 init_shaders::proc(){
     shader_test = rl.LoadShaderFromMemory(all_shaders[.vs_test].info,all_shaders[.test].info)
+    shader_test_light = rl.LoadShaderFromMemory(all_shaders[.light_vs_test].info,all_shaders[.light_test].info)
 }
 
 

@@ -4,6 +4,7 @@ import as "assets"
 import ge"game_engin"
 import "core:fmt"
 import rl "vendor:raylib"
+import rlgl "vendor:raylib/rlgl"
 import "core:os"
 import "core:slice"
 import "core:encoding/cbor"
@@ -15,7 +16,7 @@ init_startup::proc(){
     // rl.SetConfigFlags({.WINDOW_ALWAYS_RUN})
     // rl.ConfigFlags(rl.FLAG_WINDOW_ALWAYS_RUN)
     // rl.SetTargetFPS(ge.framerate)
-    // rl.SetTargetFPS(12)
+    rl.SetTargetFPS(300)
     ge.init_memery()
     ge.init_threads()
     rl.InitWindow(800, 800, "test")
@@ -34,7 +35,6 @@ init_startup::proc(){
     as.init_sounds()
     as.init_shaders()
     ge.init_maskes()
-
     ge.camera.target = {0,0}
 
 }
@@ -61,8 +61,11 @@ main :: proc() {
             ge.do_entitys()
             ge.calculate_particles()
             // ge.do_lightting()
+            ge.draw_to_bace_mask()
             ge.do_all_lights()
             ge.sim_box_2d()
+            
+            
             // ge.pool_join_my_threds()
         }
         ge.manage_sound_bytes()
@@ -96,14 +99,14 @@ main :: proc() {
                ge.delete_entity(entity_data.entity.entity_index)
            }
         }
-        fmt.print(ge.all_entitys.count," entity c\n")
-        fmt.print(ge.all_sprites.count," sprite c\n")
-        fmt.print(ge.all_lights.count," lights c\n")
+
 
         ge.do_bg()
         ge.do_mg()
         ge.do_fg()
         ge.do_debug()
+        // rl.DrawCube({0,10,1.5}, 100, 100, 100, {255,0,0,255})
+        // rl.DrawCubeV({0,0,.5}, {100,100,100}, {255,0,0,255})
         rl.EndMode2D()
         ge.do_ui()
         rl.EndDrawing()

@@ -232,7 +232,7 @@ main :: proc() {
 				}
 			}else{
 				for p in paths {
-					if strings.has_suffix(p, ".fs"){
+					if strings.has_suffix(p, ".fs")||strings.has_suffix(p, ".vs"){
 						fmt.fprintf(f, "\t\t.%s = {{ path = \"%s\", path_hash = %v, info = #load(\"%s\",cstring), }},\n", asset_name(p), p, hash.murmur64a(transmute([]byte)(p)), p)
 					}else{
 						fmt.fprintf(f, "\t\t.%s = {{ path = \"%s\", path_hash = %v, data = #load(\"%s\"), }},\n", asset_name(p), p, hash.murmur64a(transmute([]byte)(p)), p)
