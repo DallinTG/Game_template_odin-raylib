@@ -206,4 +206,21 @@ delete_entity::proc(entity_id:entity_index){
     }
 }
 
+dos_entity_exist::proc(entity_id:entity_index)->bool{
+    if all_entitys.data[entity_id.id].gen == entity_id.gen&& all_entitys.data[entity_id.id].is_occupied{
+        return true
+    }
+    return false
+}
+
+get_entity_by_index::proc(entity_id:entity_index) -> (entity:^entity){
+    if dos_entity_exist(entity_id) {
+        // success = true
+        entity = &all_entitys.data[entity_id.id].entity
+        return
+    }
+    // success = false
+    entity = nil
+    return
+}
 

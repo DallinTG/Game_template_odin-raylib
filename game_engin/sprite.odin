@@ -140,6 +140,13 @@ delete_sprite::proc(sprite_id:sprite_index){
 
 }
 
+dos_sprite_exist::proc(sprite_id:sprite_index)->bool{
+    if all_sprites.data[sprite_id.id].gen == sprite_id.gen&& all_sprites.data[sprite_id.id].is_occupied{
+        return true
+    }
+    return false
+}
+
 draw_sprite::proc(sprite:sprite){
     draw_texture(
         name = sprite.texture_name,

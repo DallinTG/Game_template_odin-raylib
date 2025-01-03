@@ -162,6 +162,13 @@ delete_light::proc(light_id:light_index){
 
 }
 
+dos_light_exist::proc(light_id:light_index)->bool{
+    if all_lights.data[light_id.id].gen == light_id.gen&& all_lights.data[light_id.id].is_occupied{
+        return true
+    }
+    return false
+}
+
 // render_light_q::proc(){
 //     for light, i in light_buffer {
 //         append(&light_rendering_q, &light_buffer[i])

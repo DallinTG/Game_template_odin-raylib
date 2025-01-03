@@ -96,9 +96,9 @@ main :: proc() {
                ge.delete_entity(entity_data.entity.entity_index)
            }
         }
-        fmt.print(ge.all_entitys.count," entity c\n")
-        fmt.print(ge.all_sprites.count," sprite c\n")
-        fmt.print(ge.all_lights.count," lights c\n")
+        if  ge.get_entity_by_index({0,0}) != nil {
+            fmt.print( ge.get_entity_by_index({0,0}))
+        }
 
         ge.do_bg()
         ge.do_mg()
